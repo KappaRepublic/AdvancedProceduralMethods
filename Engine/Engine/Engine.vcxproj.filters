@@ -96,6 +96,12 @@
     <ClCompile Include="soundclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="textureshaderclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="transparentshaderclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h">
@@ -167,6 +173,12 @@
     <ClInclude Include="soundclass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="textureshaderclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="transparentshaderclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="terrain.vs">
@@ -197,6 +209,18 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="PointLight.ps">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="texture.ps">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="texture.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="transparent.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="transparent.ps">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

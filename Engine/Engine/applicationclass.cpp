@@ -19,10 +19,13 @@ ApplicationClass::ApplicationClass()
 	m_TerrainShader = 0;
 	lightShader = 0;
 	pLightShader = 0;
+	textureShader = 0;
+	transShader = 0;
 
 	m_Light = 0;
 
 	player = 0;
+	npc = 0;
 }
 
 
@@ -233,6 +236,28 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		return false;
 	}
 
+	textureShader = new TextureShaderClass;
+	if (!textureShader) {
+		return false;
+	}
+
+	result = textureShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	if (!result) {
+		MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
+		return false;
+	}
+
+	transShader = new TransparentShaderClass;
+	if (!transShader) {
+		return false;
+	}
+
+	result = transShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	if (!result) {
+		MessageBox(hwnd, L"Could not initialize the transparent shader object.", L"Error", MB_OK);
+		return false;
+	}
+
 	// Create the light object.
 	m_Light = new LightClass;
 	if(!m_Light)
@@ -253,11 +278,16 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		return false;
 	}
 
-	result = player->initialize(m_Direct3D->GetDevice(), "../Engine/data/player.txt", L"../Engine/data/janitor.png", 6.0f, 0.0f, 6.0f, 0.0f, 0.0f, 0.0f);
+	result = player->initialize(m_Direct3D->GetDevice(), "../Engine/data/player.txt", L"../Engine/data/doom.png", 6.0f, 0.0f, 6.0f, 0.0f, 0.0f, 0.0f);
 	if (!result) {
 		MessageBox(hwnd, L"Could not initialize the example cube object.", L"Error", MB_OK);
 		return false;
 	}
+
+	npc = new ModelClass;
+	
+	result = npc->Initialize(m_Direct3D->GetDevice(), "../Engine/data/player.txt", L"../Engine/data/npc.png", NULL, NULL);
+
 
 	for (int i = 0; i < LEVEL_WIDTH; i++) {
 		for (int j = 0; j < LEVEL_HEIGHT; j++) {
@@ -367,6 +397,18 @@ void ApplicationClass::Shutdown()
 		pLightShader->Shutdown();
 		delete pLightShader;
 		pLightShader = 0;
+	}
+
+	if (textureShader) {
+		textureShader->Shutdown();
+		delete textureShader;
+		textureShader = 0;
+	}
+
+	if (transShader) {
+		transShader->Shutdown();
+		delete transShader;
+		transShader = 0;
 	}
 
 	if (player) {
@@ -611,28 +653,44 @@ bool ApplicationClass::RenderGraphics()
 	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, 
 									 m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection());
 	if(!result)
+
 	{
 		return false;
 	}
 	*/
 
-	/*
+	
 	cameraPos = m_Camera->GetPosition();
 
-	modelPos.x = 10.0f;
+	modelPos.x = 8.0f;
 	modelPos.y = 0.0f;
-	modelPos.z = 10.0f;
+	modelPos.z = 8.0f;
 
-	angle = atan2(modelPos.y - cameraPos.y, modelPos.z - cameraPos.z) * (180.0 / D3DX_PI);
+	angle = atan2(modelPos.x - cameraPos.x, modelPos.z - cameraPos.z) * (180.0 / D3DX_PI);
 
 	rotation = (float)angle * 0.0174532925f;
-	*/
+	
+	// Setup the rotation the billboard at the origin using the world matrix.
+	D3DXMatrixRotationY(&worldMatrix, rotation);
+
+	// Setup the translation matrix from the billboard model.
+	D3DXMatrixTranslation(&translateMatrix, modelPos.x, modelPos.y, modelPos.z);
+
+	// Finally combine the rotation and translation matrices to create the final world matrix for the billboard model.
+	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
+
+	// D3DXMatrixTranslation(&worldMatrix, 8.0f, 0.0f, 8.5f);
+
+	npc->Render(m_Direct3D->GetDeviceContext());
+	transShader->Render(m_Direct3D->GetDeviceContext(), npc->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, npc->getTexture1(), 1.0f);
+
 
 	D3DXMatrixRotationX(&worldMatrix, 1.0f);
 	D3DXMatrixTranslation(&translateMatrix, player->getPosition().x, 0.0f, player->getPosition().z);
 	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
 
-	
+	// Turn on the alpha blending before rendering the text.
+	m_Direct3D->TurnOnAlphaBlending();
 	
 	player->getMesh()->Render(m_Direct3D->GetDeviceContext());
 	result = lightShader->Render(m_Direct3D->GetDeviceContext(), player->getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
@@ -643,6 +701,10 @@ bool ApplicationClass::RenderGraphics()
 	}
 
 	
+	
+
+	// Turn on the alpha blending before rendering the text.
+	m_Direct3D->TurnOffAlphaBlending();
 	
 
 	for (int i = 0; i < LEVEL_WIDTH; i++) {

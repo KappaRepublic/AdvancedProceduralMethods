@@ -114,7 +114,7 @@ void Player::moveForward(bool keyDown)
 		// Update the forward speed movement based on the frame time and whether the user is holding the key down or not.
 		if (keyDown)
 		{
-			forwardSpeed = 0.125f;
+			forwardSpeed = frameTime * 0.005f;
 			backwardSpeed = 0.0f;
 			rightTurnSpeed = 0.0f;
 			leftTurnSpeed = 0.0f;

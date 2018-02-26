@@ -33,6 +33,8 @@ const float SCREEN_NEAR = 0.1f;
 #include "terrainshaderclass.h"
 #include "lightshaderclass.h"
 #include "PointLightShaderClass.h"
+#include "textureshaderclass.h"
+#include "transparentshaderclass.h"
 
 #include "lightclass.h"
 #include "perlinnoise.h"
@@ -81,10 +83,14 @@ private:
 	TerrainShaderClass* m_TerrainShader;
 	LightShaderClass* lightShader;
 	PointLightShaderClass* pLightShader;
+	TextureShaderClass* textureShader;
+	TransparentShaderClass* transShader;
 
 	LightClass* m_Light;
 
 	Player* player;
+
+	ModelClass* npc;
 
 };
 
