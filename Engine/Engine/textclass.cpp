@@ -460,6 +460,70 @@ bool TextClass::RenderSentence(SentenceType* sentence, ID3D11DeviceContext* devi
 	return true;
 }
 
+void TextClass::updateText(int senID, char* newData, ID3D11DeviceContext* deviceContext) {
+
+	char dataString[150];
+
+	// Setup the video card name string.
+	strcpy_s(dataString, newData);
+	// strcat_s(dataString, videoCardName);
+
+	switch (senID) {
+	case 1:
+		UpdateSentence(m_sentence1, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		break;
+	case 2:
+		UpdateSentence(m_sentence2, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		break;
+	case 3:
+		UpdateSentence(m_sentence3, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		break;
+	case 4:
+		UpdateSentence(m_sentence4, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		break;
+	case 5:
+		UpdateSentence(m_sentence5, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		break;
+	case 6:
+		UpdateSentence(m_sentence6, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		break;
+	default:
+		break;
+	}
+}
+
+void TextClass::updateTextWithItem(int senID, Item & item, ID3D11DeviceContext * deviceContext)
+{
+	char dataString[150];
+
+	// Setup the video card name string.
+	strcpy_s(dataString, item.itemPrefix);
+	strcat_s(dataString, item.itemName);
+	strcat_s(dataString, item.itemSuffix);
+
+	switch (senID) {
+	case 1:
+		UpdateSentence(m_sentence1, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		break;
+	case 2:
+		UpdateSentence(m_sentence2, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		break;
+	case 3:
+		UpdateSentence(m_sentence3, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		break;
+	case 4:
+		UpdateSentence(m_sentence4, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		break;
+	case 5:
+		UpdateSentence(m_sentence5, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		break;
+	case 6:
+		UpdateSentence(m_sentence6, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		break;
+	default:
+		break;
+	}
+}
 
 bool TextClass::SetVideoCardInfo(char* videoCardName, int videoCardMemory, ID3D11DeviceContext* deviceContext)
 {

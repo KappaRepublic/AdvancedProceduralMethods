@@ -10,6 +10,7 @@
 ///////////////////////
 #include "fontclass.h"
 #include "fontshaderclass.h"
+#include "Item.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,16 +42,22 @@ public:
 	bool Render(ID3D11DeviceContext*, FontShaderClass*, D3DXMATRIX, D3DXMATRIX);
 
 	bool SetVideoCardInfo(char*, int, ID3D11DeviceContext*);
+
 	bool SetFps(int, ID3D11DeviceContext*);
 	bool SetCpu(int, ID3D11DeviceContext*);
 	bool SetCameraPosition(float, float, float, ID3D11DeviceContext*);
 	bool SetCameraRotation(float, float, float, ID3D11DeviceContext*);
+
+	void updateText(int senID, char * newData, ID3D11DeviceContext* deviceContext);
+	void updateTextWithItem(int senID, Item &item, ID3D11DeviceContext* deviceContext);
 
 private:
 	bool InitializeSentence(SentenceType**, int, ID3D11Device*);
 	bool UpdateSentence(SentenceType*, char*, int, int, float, float, float, ID3D11DeviceContext*);
 	void ReleaseSentence(SentenceType**);
 	bool RenderSentence(SentenceType*, ID3D11DeviceContext*, FontShaderClass*, D3DXMATRIX, D3DXMATRIX);
+
+	
 
 private:
 	int m_screenWidth, m_screenHeight;

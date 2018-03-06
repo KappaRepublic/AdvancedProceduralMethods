@@ -33,8 +33,8 @@ bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int
 	quilt2 = false;
 
 	// Save the dimensions of the terrain.
-	m_terrainWidth = pow(2, EXPONENT) + 1;// (EXPONENT * EXPONENT) + 1; //terrainWidth;
-	m_terrainHeight = pow(2, EXPONENT) + 1;// (EXPONENT * EXPONENT) + 1;  //terrainHeight;
+	m_terrainWidth = terrainWidth; // pow(2, EXPONENT) + 1;// (EXPONENT * EXPONENT) + 1; //terrainWidth;
+	m_terrainHeight = terrainHeight; // pow(2, EXPONENT) + 1;// (EXPONENT * EXPONENT) + 1;  //terrainHeight;
 
 	// Create the structure to hold the terrain data.
 	m_heightMap = new HeightMapType[m_terrainWidth * m_terrainHeight];

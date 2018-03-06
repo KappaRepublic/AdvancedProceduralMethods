@@ -88,6 +88,7 @@
     <ClCompile Include="fontshaderclass.cpp" />
     <ClCompile Include="fpsclass.cpp" />
     <ClCompile Include="inputclass.cpp" />
+    <ClCompile Include="Item.cpp" />
     <ClCompile Include="LevelCell.cpp" />
     <ClCompile Include="lightclass.cpp" />
     <ClCompile Include="lightshaderclass.cpp" />
@@ -97,6 +98,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PointLightShaderClass.cpp" />
     <ClCompile Include="positionclass.cpp" />
+    <ClCompile Include="Room.cpp" />
     <ClCompile Include="soundclass.cpp" />
     <ClCompile Include="systemclass.cpp" />
     <ClCompile Include="terrainclass.cpp" />
@@ -117,6 +119,7 @@
     <ClInclude Include="fontshaderclass.h" />
     <ClInclude Include="fpsclass.h" />
     <ClInclude Include="inputclass.h" />
+    <ClInclude Include="Item.h" />
     <ClInclude Include="LevelCell.h" />
     <ClInclude Include="lightclass.h" />
     <ClInclude Include="modelclass.h" />
@@ -124,6 +127,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="PointLightShaderClass.h" />
     <ClInclude Include="positionclass.h" />
+    <ClInclude Include="Room.h" />
     <ClInclude Include="soundclass.h" />
     <ClInclude Include="systemclass.h" />
     <ClInclude Include="terrainclass.h" />

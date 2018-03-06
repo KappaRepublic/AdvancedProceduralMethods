@@ -19,6 +19,12 @@
     <Filter Include="Source Files\Geometry">
       <UniqueIdentifier>{4d26a726-466e-42da-b75b-0267d51654f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ItemSystem">
+      <UniqueIdentifier>{6c145a93-e71c-41cf-b65f-8513ce62b22f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Item System">
+      <UniqueIdentifier>{160eb582-c446-4bb4-a673-fb8a0316fd5a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="applicationclass.cpp">
@@ -102,6 +108,12 @@
     <ClCompile Include="transparentshaderclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Room.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Item.cpp">
+      <Filter>Source Files\Item System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h">
@@ -178,6 +190,12 @@
     </ClInclude>
     <ClInclude Include="transparentshaderclass.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Room.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Item.h">
+      <Filter>Header Files\ItemSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

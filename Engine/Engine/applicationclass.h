@@ -13,8 +13,10 @@ const bool VSYNC_ENABLED = true;
 const float SCREEN_DEPTH = 1000.0f;
 const float SCREEN_NEAR = 0.1f;
 
-#define LEVEL_WIDTH 25
-#define LEVEL_HEIGHT 25
+#define LEVEL_WIDTH 36
+#define LEVEL_HEIGHT 36
+
+#define NUM_OF_ROOMS 500
 
 ///////////////////////
 // MY CLASS INCLUDES //
@@ -39,10 +41,16 @@ const float SCREEN_NEAR = 0.1f;
 #include "lightclass.h"
 #include "perlinnoise.h"
 #include "modelclass.h"
+#include "Room.h"
 
 #include "LevelCell.h"
 #include "Player.h"
+#include "Item.h"
 
+#include <list>
+#include <time.h>
+#include <algorithm>
+#include <fstream>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: ApplicationClass
@@ -61,6 +69,13 @@ public:
 	// Level structure
 	bool levelMap[LEVEL_WIDTH][LEVEL_HEIGHT];
 	std::vector<int> anArrayOfBools;
+	std::list<Room*> roomVector;
+	std::vector<Item*> inventory;
+
+	void generateRooms();
+	void adjustLevel();
+	void createHCorridor(int x1, int x2, int y);
+	void createVCorridor(int y1, int y2, int x);
 
 	LevelCell levelLayout[LEVEL_WIDTH][LEVEL_HEIGHT];
 
@@ -91,6 +106,8 @@ private:
 	Player* player;
 
 	ModelClass* npc;
+
+	bool testInputOnce;
 
 };
 
