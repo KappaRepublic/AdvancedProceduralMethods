@@ -16,7 +16,7 @@ const float SCREEN_NEAR = 0.1f;
 #define LEVEL_WIDTH 36
 #define LEVEL_HEIGHT 36
 
-#define NUM_OF_ROOMS 500
+#define NUM_OF_ROOMS 50
 
 ///////////////////////
 // MY CLASS INCLUDES //
@@ -118,6 +118,8 @@ private:
 	DebugWindowClass* m_DebugWindow;
 
 	bool testInputOnce;
+	bool inputCameraChange;
+	bool overheadCam;
 
 };
 

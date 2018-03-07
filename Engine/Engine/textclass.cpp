@@ -470,7 +470,7 @@ void TextClass::updateText(int senID, char* newData, ID3D11DeviceContext* device
 
 	switch (senID) {
 	case 1:
-		UpdateSentence(m_sentence1, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		UpdateSentence(m_sentence2, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
 		break;
 	case 2:
 		UpdateSentence(m_sentence2, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
@@ -506,19 +506,19 @@ void TextClass::updateTextWithItem(int senID, Item & item, ID3D11DeviceContext *
 		UpdateSentence(m_sentence1, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
 		break;
 	case 2:
-		UpdateSentence(m_sentence2, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		UpdateSentence(m_sentence2, dataString, 10, 30, 1.0f, 1.0f, 1.0f, deviceContext);
 		break;
 	case 3:
-		UpdateSentence(m_sentence3, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		UpdateSentence(m_sentence3, dataString, 10, 50, 1.0f, 1.0f, 1.0f, deviceContext);
 		break;
 	case 4:
-		UpdateSentence(m_sentence4, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		UpdateSentence(m_sentence4, dataString, 10, 70, 1.0f, 1.0f, 1.0f, deviceContext);
 		break;
 	case 5:
-		UpdateSentence(m_sentence5, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		UpdateSentence(m_sentence5, dataString, 10, 90, 1.0f, 1.0f, 1.0f, deviceContext);
 		break;
 	case 6:
-		UpdateSentence(m_sentence6, dataString, 10, 10, 1.0f, 1.0f, 1.0f, deviceContext);
+		UpdateSentence(m_sentence6, dataString, 10, 110, 1.0f, 1.0f, 1.0f, deviceContext);
 		break;
 	default:
 		break;

@@ -31,6 +31,8 @@ ApplicationClass::ApplicationClass()
 	m_DebugWindow = 0;
 
 	testInputOnce = false;
+	inputCameraChange = false;
+	overheadCam = false;
 }
 
 
@@ -292,7 +294,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 
 	npc = new ModelClass;
 	
-	result = npc->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/alpha.png", NULL, NULL);
+	result = npc->Initialize(m_Direct3D->GetDevice(), "../Engine/data/player.txt", L"../Engine/data/chestTexture.png", NULL, NULL);
 
 
 	for (int i = 0; i < LEVEL_WIDTH; i++) {
@@ -300,64 +302,6 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 			levelMap[i][j] = false;
 		}
 	}
-
-	/*
-	levelMap[0][0] = true;
-	levelMap[0][1] = true;
-
-	anArrayOfBools = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-					   0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-					   0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-					   0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-					   0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-					   0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0,
-					   0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 1, 1, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0,
-					   0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 1, 1, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0,
-					   0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 1, 1, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0,
-					   0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 1, 1, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0,
-					   0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 1, 1, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0,
-					   0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0,
-					   0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 0, 0, 0, 0,
-					   0, 0, 1, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 1, 0, 0, 0, 0, 0, 0,
-					   0, 0, 1, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 1, 0, 0, 0, 0, 0, 0,
-					   0, 0, 1, 2, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 0,
-					   0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0,
-					   0, 0, 1, 2, 1, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0,
-					   0, 0, 1, 2, 1, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0,
-					   1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0,
-					   1, 2, 2, 2, 2, 2, 1, 1, 2, 1, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0,
-					   1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0,
-					   1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0,
-					   1, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0,
-					   1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0 };
-
-
-	int tempCounter = 0;
-
-
-	// Initialise the level layout
-	for (int j = 0; j < LEVEL_HEIGHT; j++) {
-		for (int i = 0; i < LEVEL_WIDTH; i++) {
-			
-			levelLayout[i][j].wall = anArrayOfBools.at(tempCounter);
-				tempCounter++;
-
-			if (levelLayout[i][j].wall == 1) {
-				
-				levelLayout[i][j].initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/testTexture.png");
-				// levelLayout[i][j].wall = true;
-			}
-			else {
-				levelLayout[i][j].initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/floorTexture.png");
-				// levelLayout[i][j].wall = false;
-			}
-
-			
-		}
-	}
-	*/
-
-	
 
 	// Generate procedural dungeon
 	generateRooms();
@@ -599,7 +543,7 @@ bool ApplicationClass::Frame()
 	}
 
 	m_Text->updateTextWithItem(1, *inventory.at(0), m_Direct3D->GetDeviceContext());
-	m_Text->updateTextWithItem(3, *inventory.at(1), m_Direct3D->GetDeviceContext());
+	m_Text->updateTextWithItem(2, *inventory.at(1), m_Direct3D->GetDeviceContext());
 
 
 	return result;
@@ -777,12 +721,23 @@ bool ApplicationClass::HandleInput(float frameTime)
 	player->turnRight(keyDown);
 
 	keyDown = m_Input->isQPressed();
-	player->moveLeft(keyDown);
+	if (keyDown) {
+		if (!inputCameraChange) {
+			overheadCam = !overheadCam;
+			inputCameraChange = true;
+		}
+	}
+	else {
+		if (inputCameraChange) {
+			inputCameraChange = false;
+		}
+	}
 
 	keyDown = m_Input->isEPressed();
 	if (keyDown) {
 		if (!testInputOnce) {
 			inventory.at(0)->initialize();
+			inventory.at(1)->initialize();
 			testInputOnce = true;
 		}
 	}
@@ -811,15 +766,20 @@ bool ApplicationClass::HandleInput(float frameTime)
 	// m_Camera->SetPosition(player->getPosition().x, -8.0f, player->getPosition().z);
 	// m_Position->SetPosition(player->getPosition().x, 14.0f, player->getPosition().z - 5.5f);
 
+	if (overheadCam) {
 
-	// OVERHEAD CAM
-	// m_Position->SetPosition(player->getPosition().x, 20.0f, player->getPosition().z);
-	// m_Position->SetRotation(90.0f, player->getRotation().y, 0.0f);
+		// OVERHEAD CAM
+		m_Position->SetPosition(player->getPosition().x, 20.0f, player->getPosition().z);
+		m_Position->SetRotation(90.0f, player->getRotation().y, 0.0f);
+	}
+	else {
+		// FIRST PERSON CAM
+		m_Position->SetPosition(player->getPosition().x, 0.0f, player->getPosition().z);
+		m_Position->SetRotation(0.0f, player->getRotation().y, 0.0f);
 
-	// FIRST PERSON CAM
-	m_Position->SetPosition(player->getPosition().x, 0.0f, player->getPosition().z);
-	m_Position->SetRotation(0.0f, player->getRotation().y, 0.0f);
-	
+		
+	}
+
 	// Get the view point position/rotation.
 	m_Position->GetPosition(posX, posY, posZ);
 	m_Position->GetRotation(rotX, rotY, rotZ);
@@ -941,14 +901,14 @@ bool ApplicationClass::RenderGraphics()
 	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
 
 	// Turn on the alpha blending before rendering the text.
-	m_Direct3D->TurnOnAlphaBlending();
+	// m_Direct3D->TurnOnAlphaBlending();
 	// D3DXMatrixTranslation(&worldMatrix, 8.0f, 0.0f, 8.5f);
 
 	npc->Render(m_Direct3D->GetDeviceContext());
 	textureShader->Render(m_Direct3D->GetDeviceContext(), npc->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, npc->getTexture1());
 
 	// Turn on the alpha blending before rendering the text.
-	m_Direct3D->TurnOffAlphaBlending();
+	// m_Direct3D->TurnOffAlphaBlending();
 
 	D3DXMatrixRotationX(&worldMatrix, 0.0f);
 
