@@ -46,6 +46,8 @@ const float SCREEN_NEAR = 0.1f;
 #include "LevelCell.h"
 #include "Player.h"
 #include "Item.h"
+#include "Rendertextureclass.h"
+#include "Debugwindowclass.h"
 
 #include <list>
 #include <time.h>
@@ -80,8 +82,13 @@ public:
 	LevelCell levelLayout[LEVEL_WIDTH][LEVEL_HEIGHT];
 
 private:
+	bool RenderToTexture();
+	bool RenderScene();
+
 	bool HandleInput(float);
 	bool RenderGraphics();
+
+	bool checkForCollision(int direction, bool movingForward);
 
 private:
 	InputClass* m_Input;
@@ -106,6 +113,9 @@ private:
 	Player* player;
 
 	ModelClass* npc;
+
+	RenderTextureClass* m_RenderTexture;
+	DebugWindowClass* m_DebugWindow;
 
 	bool testInputOnce;
 

@@ -114,6 +114,12 @@
     <ClCompile Include="Item.cpp">
       <Filter>Source Files\Item System</Filter>
     </ClCompile>
+    <ClCompile Include="Rendertextureclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugwindowclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h">
@@ -196,6 +202,12 @@
     </ClInclude>
     <ClInclude Include="Item.h">
       <Filter>Header Files\ItemSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendertextureclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugwindowclass.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -11,7 +11,7 @@ public:
 	bool initialize(ID3D11Device* device, char* modelFilename, WCHAR* textureFilename);
 	void shutDown();
 
-	int wall;
+	bool wall;
 
 	ModelClass* getMesh() { return cellMesh; };
 private:

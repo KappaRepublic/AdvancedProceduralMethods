@@ -21,12 +21,13 @@ public:
 	int levelPosX, levelPosY;
 
 	void setFrameTime(float time) { frameTime = time; };
+	int getDirection() { return direction; };
 
 	// Movement
 	void moveRight(bool keyDown);
 	void moveLeft(bool keyDown);
-	void moveForward(bool keyDown);
-	void moveBackward(bool keyDown);
+	void moveForward(bool keyDown, bool colliding);
+	void moveBackward(bool keyDown, bool colliding);
 	void turnLeft(bool keyDown);
 	void turnRight(bool keyDown);
 private:

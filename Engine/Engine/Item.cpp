@@ -6,15 +6,18 @@ Item::Item()
 		"Seb's ",
 		"Jack's ",
 		"Rory's ",
+		"Dimitar's ",
 		"Indomitable ",
 		"Phantasmagoric ",
 		"Procedural ",
-		"A E S T H E T I C ",
+		"A E S T H E T I C  ",
 		"NULL ",
 		"Off-Brand ",
 		"Discount ",
 		"Prefixless ",
 		"Just a ",
+		"Undead ",
+		"Worthless ",
 		""
 	};
 
@@ -30,7 +33,8 @@ Item::Item()
 		"Rivers",
 		"Monitor",
 		"Juice",
-		"Hat"
+		"Hat",
+		"Boots"
 	};
 
 	suffixes = {
@@ -43,6 +47,7 @@ Item::Item()
 		" OF 2147483647",
 		" in the Desert",
 		" with no Suffix",
+		" Mk 2.0"
 		""
 	};
 }

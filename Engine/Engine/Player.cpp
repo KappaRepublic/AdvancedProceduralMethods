@@ -105,7 +105,7 @@ void Player::moveLeft(bool keyDown)
 	return;
 }
 
-void Player::moveForward(bool keyDown)
+void Player::moveForward(bool keyDown, bool colliding)
 {
 	float radians;
 
@@ -114,16 +114,22 @@ void Player::moveForward(bool keyDown)
 		// Update the forward speed movement based on the frame time and whether the user is holding the key down or not.
 		if (keyDown)
 		{
-			forwardSpeed = frameTime * 0.005f;
-			backwardSpeed = 0.0f;
-			rightTurnSpeed = 0.0f;
-			leftTurnSpeed = 0.0f;
-			inMotion = true;
+			if (!colliding) {
+				forwardSpeed = frameTime * 0.005f;
+				backwardSpeed = 0.0f;
+				rightTurnSpeed = 0.0f;
+				leftTurnSpeed = 0.0f;
+				inMotion = true;
+			}
+			else {
+				forwardSpeed = 0.0f;
+			}
 		}
 		else
 		{
 			forwardSpeed = 0.0f;
 		}
+		
 
 		switch (direction) {
 		case 0:
@@ -210,7 +216,7 @@ void Player::moveForward(bool keyDown)
 	*/
 }
 
-void Player::moveBackward(bool keyDown)
+void Player::moveBackward(bool keyDown, bool colliding)
 {
 	float radians;
 
@@ -219,11 +225,16 @@ void Player::moveBackward(bool keyDown)
 		// Update the backward speed movement based on the frame time and whether the user is holding the key down or not.
 		if (keyDown)
 		{
-			forwardSpeed = 0.0f;
-			backwardSpeed = frameTime * 0.005f;
-			rightTurnSpeed = 0.0f;
-			leftTurnSpeed = 0.0f;
-			inMotion = true;
+			if (!colliding) {
+				forwardSpeed = 0.0f;
+				backwardSpeed = frameTime * 0.005f;
+				rightTurnSpeed = 0.0f;
+				leftTurnSpeed = 0.0f;
+				inMotion = true;
+			}
+			else {
+				backwardSpeed = 0.0f;
+			}
 		}
 		else
 		{
