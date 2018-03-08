@@ -25,6 +25,9 @@
     <Filter Include="Source Files\Item System">
       <UniqueIdentifier>{160eb582-c446-4bb4-a673-fb8a0316fd5a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IMGUI">
+      <UniqueIdentifier>{b1763a08-a199-4122-a0fc-4b547a51afda}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="applicationclass.cpp">
@@ -120,6 +123,18 @@
     <ClCompile Include="Debugwindowclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="imgui.cpp">
+      <Filter>IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_demo.cpp">
+      <Filter>IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_draw.cpp">
+      <Filter>IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_impl_dx11.cpp">
+      <Filter>IMGUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h">
@@ -209,6 +224,18 @@
     <ClInclude Include="Debugwindowclass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="imconfig.h">
+      <Filter>IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui.h">
+      <Filter>IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_impl_dx11.h">
+      <Filter>IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_internal.h">
+      <Filter>IMGUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="terrain.vs">
@@ -253,5 +280,10 @@
     <None Include="transparent.ps">
       <Filter>Shader Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="imgui.natvis">
+      <Filter>IMGUI</Filter>
+    </Natvis>
   </ItemGroup>
 </Project>

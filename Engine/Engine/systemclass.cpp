@@ -2,6 +2,8 @@
 // Filename: systemclass.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "systemclass.h"
+#include "imgui.h"
+#include "imgui_impl_dx11.h"
 
 
 SystemClass::SystemClass()
@@ -58,6 +60,8 @@ bool SystemClass::Initialize()
 	if (!result) {
 		return false;
 	}
+
+
 
 	return true;
 }
@@ -225,7 +229,8 @@ void SystemClass::InitializeWindows(int& screenWidth, int& screenHeight)
 	SetFocus(m_hwnd);
 
 	// Hide the mouse cursor.
-	ShowCursor(false);
+	// ShowCursor(false);
+	
 
 	return;
 }
@@ -256,9 +261,13 @@ void SystemClass::ShutdownWindows()
 	return;
 }
 
-
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 {
+
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, umessage, wparam, lparam))
+		return true;
+
 	switch(umessage)
 	{
 		// Check if the window is being destroyed.

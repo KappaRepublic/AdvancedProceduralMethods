@@ -229,6 +229,17 @@ void InputClass::GetMouseLocation(int& mouseX, int& mouseY)
 	return;
 }
 
+bool InputClass::MouseLeftClick()
+{
+	return (m_mouseState.lX != 0);
+}
+
+bool InputClass::MouseRightClick()
+{
+	return (m_mouseState.lY != 0);
+}
+
+
 
 bool InputClass::IsEscapePressed()
 {

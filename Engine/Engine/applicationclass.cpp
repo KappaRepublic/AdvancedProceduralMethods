@@ -30,9 +30,14 @@ ApplicationClass::ApplicationClass()
 	m_RenderTexture = 0;
 	m_DebugWindow = 0;
 
+	m_mouse = 0;
+
 	testInputOnce = false;
 	inputCameraChange = false;
 	overheadCam = false;
+	inventoryActive = false;
+	testWindow = false;
+
 }
 
 
@@ -343,6 +348,36 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		return false;
 	}
 
+	/*
+	ImGui::Text("Hello, world %d", 123);
+	if (ImGui::Button("Save"))
+	{
+		// do stuff
+	}
+	*/
+
+	testWindow = false;
+
+
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui_ImplDX11_Init(hwnd, m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext());
+	io.DisplaySize.x = 1280.0f;
+	io.DisplaySize.y = 720.0f;
+
+	unsigned char* pixels;
+	int width, height;
+
+	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+
+	ImGui::StyleColorsDark();
+
+	my_tool_active = true;
+
+	
+
+	
 
 	return true;
 }
@@ -495,6 +530,51 @@ bool ApplicationClass::Frame()
 {
 	bool result;
 
+
+	ImGuiIO& io = ImGui::GetIO();
+	// 
+	int mouseX, mouseY;
+	m_Input->GetMouseLocation(mouseX, mouseY);
+	// io.MousePos.x = mouseX;
+	// io.MousePos.y = mouseY;
+	// io.MouseDown[0] = m_Input->MouseLeftClick();
+	// io.MouseDown[1] = m_Input->MouseRightClick();
+
+	ImGui_ImplDX11_NewFrame();
+
+	/*
+	ImGui::Begin("Paulus", &my_tool_active, ImVec2(0, 0), ImGuiWindowFlags_AlwaysAutoResize);
+	ImGui::Text("This is some test dialogue.\nA Matt in every house by 2020.");
+	ImGui::End();
+
+	ImGui::Begin("Flubbergam", &my_tool_active, ImVec2(0, 0), ImGuiWindowFlags_AlwaysAutoResize);
+	ImGui::Text("OIAfpfewputWTHNWREHREIGUHREGI");
+	ImGui::End();
+	*/
+
+	// Menu System
+	ImGui::Begin("Menu", &my_tool_active, ImVec2(0, 0), ImGuiWindowFlags_AlwaysAutoResize);
+	if (ImGui::Button("Inventory", ImVec2(72, 72))) {
+		testWindow = !testWindow;
+	}
+	ImGui::Button("Button 2", ImVec2(72, 72));
+	ImGui::End();
+
+	ImGui::Begin("Inventory", &inventoryActive, ImVec2(0, 0), ImGuiWindowFlags_AlwaysAutoResize);
+	for (int i = 0; i < inventory.size(); i++) {
+		char test[150];
+
+		strcpy_s(test, inventory.at(i)->itemPrefix);
+		strcat_s(test, inventory.at(i)->itemName);
+		strcat_s(test, inventory.at(i)->itemSuffix);
+
+		ImGui::Text(test);
+	}
+	ImGui::End();
+
+	ImGui::Begin("Spooky", &testWindow);
+	ImGui::Text("This is a test");
+	ImGui::End();
 
 	// Read the user input.
 	result = m_Input->Frame();
@@ -738,6 +818,7 @@ bool ApplicationClass::HandleInput(float frameTime)
 		if (!testInputOnce) {
 			inventory.at(0)->initialize();
 			inventory.at(1)->initialize();
+			inventory.at(2)->initialize();
 			testInputOnce = true;
 		}
 	}
@@ -805,7 +886,6 @@ bool ApplicationClass::HandleInput(float frameTime)
 
 	return true;
 }
-
 
 bool ApplicationClass::RenderGraphics()
 {
@@ -883,9 +963,9 @@ bool ApplicationClass::RenderGraphics()
 
 	cameraPos = m_Camera->GetPosition();
 
-	modelPos.x = 8.0f;
+	modelPos.x = roomVector.back()->getCenterX();
 	modelPos.y = 0.0f;
-	modelPos.z = 8.0f;
+	modelPos.z = roomVector.back()->getCenterY();
 
 	angle = atan2(modelPos.x - cameraPos.x, modelPos.z - cameraPos.z) * (180.0 / D3DX_PI);
 
@@ -901,14 +981,14 @@ bool ApplicationClass::RenderGraphics()
 	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
 
 	// Turn on the alpha blending before rendering the text.
-	// m_Direct3D->TurnOnAlphaBlending();
+	m_Direct3D->TurnOnAlphaBlending();
 	// D3DXMatrixTranslation(&worldMatrix, 8.0f, 0.0f, 8.5f);
 
 	npc->Render(m_Direct3D->GetDeviceContext());
 	textureShader->Render(m_Direct3D->GetDeviceContext(), npc->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, npc->getTexture1());
 
 	// Turn on the alpha blending before rendering the text.
-	// m_Direct3D->TurnOffAlphaBlending();
+	m_Direct3D->TurnOffAlphaBlending();
 
 	D3DXMatrixRotationX(&worldMatrix, 0.0f);
 
@@ -942,8 +1022,13 @@ bool ApplicationClass::RenderGraphics()
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	m_Direct3D->TurnZBufferOn();
 
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
 	// Present the rendered scene to the screen.
 	m_Direct3D->EndScene();
+
+	
 
 	return true;
 }

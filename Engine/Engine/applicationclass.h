@@ -16,7 +16,7 @@ const float SCREEN_NEAR = 0.1f;
 #define LEVEL_WIDTH 36
 #define LEVEL_HEIGHT 36
 
-#define NUM_OF_ROOMS 50
+#define NUM_OF_ROOMS 24
 
 ///////////////////////
 // MY CLASS INCLUDES //
@@ -54,6 +54,14 @@ const float SCREEN_NEAR = 0.1f;
 #include <algorithm>
 #include <fstream>
 
+
+/// IMGUI //
+#include "imgui.h"
+#include "imgui_impl_dx11.h"
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: ApplicationClass
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,6 +88,9 @@ public:
 	void createVCorridor(int y1, int y2, int x);
 
 	LevelCell levelLayout[LEVEL_WIDTH][LEVEL_HEIGHT];
+
+	// ImGuiIO& io;
+
 
 private:
 	bool RenderToTexture();
@@ -117,9 +128,14 @@ private:
 	RenderTextureClass* m_RenderTexture;
 	DebugWindowClass* m_DebugWindow;
 
+	IDirectInputDevice8* m_mouse;
+
 	bool testInputOnce;
 	bool inputCameraChange;
 	bool overheadCam;
+	bool my_tool_active;
+	bool inventoryActive;
+	bool testWindow;
 
 };
 
