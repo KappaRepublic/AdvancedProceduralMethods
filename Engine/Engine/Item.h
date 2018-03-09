@@ -16,5 +16,6 @@ public:
 
 	char *itemPrefix, *itemName, *itemSuffix;
 	int rarity;
+	int power;
 private:
 };

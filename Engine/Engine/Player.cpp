@@ -3,6 +3,7 @@
 Player::Player()
 {
 	mesh = 0;
+	equippedWeapon = -1;
 }
 
 Player::Player(const Player &)

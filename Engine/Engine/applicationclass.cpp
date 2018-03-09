@@ -371,13 +371,9 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
 
-	ImGui::StyleColorsDark();
+	ImGui::StyleColorsClassic();
 
-	my_tool_active = true;
-
-	
-
-	
+	my_tool_active = false;
 
 	return true;
 }
@@ -525,7 +521,6 @@ void ApplicationClass::Shutdown()
 	return;
 }
 
-
 bool ApplicationClass::Frame()
 {
 	bool result;
@@ -553,27 +548,65 @@ bool ApplicationClass::Frame()
 	*/
 
 	// Menu System
-	ImGui::Begin("Menu", &my_tool_active, ImVec2(0, 0), ImGuiWindowFlags_AlwaysAutoResize);
+	ImGui::Begin("Menu", &my_tool_active, ImVec2(0, 0), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize);
 	if (ImGui::Button("Inventory", ImVec2(72, 72))) {
 		testWindow = !testWindow;
 	}
-	ImGui::Button("Button 2", ImVec2(72, 72));
+	ImGui::SameLine();
+	ImGui::Button("Equipment", ImVec2(72, 72));
+	ImGui::SameLine(); // :)
+	if (ImGui::Button("Quit Game", ImVec2(72, 72))) {
+		exit(-1);
+	}
 	ImGui::End();
 
 	ImGui::Begin("Inventory", &inventoryActive, ImVec2(0, 0), ImGuiWindowFlags_AlwaysAutoResize);
 	for (int i = 0; i < inventory.size(); i++) {
 		char test[150];
 
+		// sprintf(test, inventory.at(i)->itemPrefix);
+
 		strcpy_s(test, inventory.at(i)->itemPrefix);
 		strcat_s(test, inventory.at(i)->itemName);
 		strcat_s(test, inventory.at(i)->itemSuffix);
+		// strcat_s(test, (char*)inventory.at(i)->power);
 
-		ImGui::Text(test);
+		if (ImGui::Selectable(test, player->equippedWeapon == i)) {
+			player->equippedWeapon = i;
+		}
+		ImGui::SameLine(350); ImGui::Text("(+%d DMG)", inventory.at(i)->power);
+	}
+	ImGui::End(); // (:
+
+	ImGui::Begin("Jason", &testWindow);
+	ImGui::Text("Well met, traveller.\nWhat bring's you to these lands?");
+	ImGui::End();
+
+	ImGui::Begin("Minimap", &testWindow, ImVec2(196, 196), ImGuiWindowFlags_NoResize);
+	ImVec2 pos = ImGui::GetCursorScreenPos();
+	ImGui::Image(m_RenderTexture->GetShaderResourceView(), ImVec2(284, 160));
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		float focus_sz = 32.0f;
+		float focus_x = io.MousePos.x - pos.x - focus_sz * 0.5f; if (focus_x < 0.0f) focus_x = 0.0f; else if (focus_x > 284 - focus_sz) focus_x = 284 - focus_sz;
+		float focus_y = io.MousePos.y - pos.y - focus_sz * 0.5f; if (focus_y < 0.0f) focus_y = 0.0f; else if (focus_y > 160 - focus_sz) focus_y = 160 - focus_sz;
+		ImGui::Text("Min: (%.2f, %.2f)", focus_x, focus_y);
+		ImGui::Text("Max: (%.2f, %.2f)", focus_x + focus_sz, focus_y + focus_sz);
+		ImVec2 uv0 = ImVec2((focus_x) / 284, (focus_y) / 160);
+		ImVec2 uv1 = ImVec2((focus_x + focus_sz) / 284, (focus_y + focus_sz) / 160);
+		ImGui::Image(m_RenderTexture->GetShaderResourceView(), ImVec2(128, 128), uv0, uv1, ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+		ImGui::EndTooltip();
 	}
 	ImGui::End();
 
-	ImGui::Begin("Spooky", &testWindow);
-	ImGui::Text("This is a test");
+	ImGui::Begin("Player Status", &testWindow);
+	char buf[32];
+	sprintf(buf, "HP: %d/%d", (int)(0.0f * 100), 100);
+	ImGui::ProgressBar(0.0f, ImVec2(-1.0f, 0.f), buf);
+	ImGui::End();
+
+	ImGui::Begin("Generate Dungeon", &testWindow);
 	ImGui::End();
 
 	// Read the user input.
@@ -622,13 +655,14 @@ bool ApplicationClass::Frame()
 		return false;
 	}
 
-	m_Text->updateTextWithItem(1, *inventory.at(0), m_Direct3D->GetDeviceContext());
-	m_Text->updateTextWithItem(2, *inventory.at(1), m_Direct3D->GetDeviceContext());
+	if (player->equippedWeapon != -1) {
+		m_Text->updateTextWithItem(1, *inventory.at(player->equippedWeapon), m_Direct3D->GetDeviceContext());
+	}
+	// m_Text->updateTextWithItem(2, *inventory.at(1), m_Direct3D->GetDeviceContext());
 
 
 	return result;
 }
-
 
 void ApplicationClass::generateRooms()
 {
@@ -641,7 +675,7 @@ void ApplicationClass::generateRooms()
 	// Initialise the level layout
 	for (int j = 0; j < LEVEL_HEIGHT; j++) {
 		for (int i = 0; i < LEVEL_WIDTH; i++) {
-			levelLayout[i][j].initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/bricks.jpg");
+			levelLayout[i][j].initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/bricks.jpg", L"../Engine/data/minimapWall.png");
 			levelLayout[i][j].wall = true;
 		}
 	}
@@ -719,10 +753,8 @@ void ApplicationClass::generateRooms()
 
 			roomVector.push_back(tempRoom);
 
-			
 		}
 		
-
 		/*
 		delete tempRoom;
 		tempRoom = 0;
@@ -730,6 +762,7 @@ void ApplicationClass::generateRooms()
 	}
 
 	adjustLevel();
+	// clearUnusedCells();
 }
 
 void ApplicationClass::adjustLevel()
@@ -737,7 +770,7 @@ void ApplicationClass::adjustLevel()
 	for (Room* const& i : roomVector) {
 		for (int y = i->getY1(); y < i->getY2(); y++) {
 			for (int x = i->getX1(); x < i->getX2(); x++) {
-				levelLayout[x+1][y+1].initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/stoneFloor.jpg");
+				levelLayout[x+1][y+1].initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/stoneFloor.jpg", L"../Engine/data/minimapFloor.png");
 				levelLayout[x+1][y+1].wall = false;
 			}	
 		}	
@@ -746,19 +779,30 @@ void ApplicationClass::adjustLevel()
 	player->setPosition(roomVector.front()->getCenterX(), 0.0f, roomVector.front()->getCenterY());
 }
 
-void ApplicationClass::createHCorridor(int x1, int x2, int y)
-{
+void ApplicationClass::createHCorridor(int x1, int x2, int y) {
 	for (int x = min(x1, x2); x <= max(x1, x2); x++) {
-		levelLayout[x + 1][y + 1].initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/stoneFloor.jpg");
+		levelLayout[x + 1][y + 1].initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/stoneFloor.jpg", L"../Engine/data/minimapFloor.png");
 		levelLayout[x + 1][y + 1].wall = false;
 	}
 }
 
-void ApplicationClass::createVCorridor(int y1, int y2, int x)
-{
+void ApplicationClass::createVCorridor(int y1, int y2, int x) {
 	for (int y = min(y1, y2); y <= max(y1, y2); y++) {
-		levelLayout[x + 1][y + 1].initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/stoneFloor.jpg");
+		levelLayout[x + 1][y + 1].initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/stoneFloor.jpg", L"../Engine/data/minimapFloor.png");
 		levelLayout[x + 1][y + 1].wall = false;
+	}
+}
+
+void ApplicationClass::clearUnusedCells() {
+	for (int y = 0; y < LEVEL_HEIGHT; y++) {
+		for (int x = 0; x < LEVEL_WIDTH; x++) {
+			if (levelLayout[x + 1][y].wall &&
+				levelLayout[x - 1][y].wall &&
+				levelLayout[x][y + 1].wall &&
+				levelLayout[x][y - 1].wall) {
+				levelLayout[x][y].empty = true;
+			}
+		}
 	}
 }
 
@@ -897,19 +941,39 @@ bool ApplicationClass::RenderGraphics()
 
 	D3DXVECTOR3 cPos, cRot;
 
-	// Clear the scene.
-	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
-
 	cPos = m_Camera->GetPosition();
 	cRot = m_Camera->GetRotation();
 
-	// Render mini map
-	// RenderToTexture();
+	// Adjust camera for minimap
+	m_Camera->SetPosition(player->getPosition().x, 10.0f, player->getPosition().z);
+	m_Camera->SetRotation(90.0f, 0.0f, 0.0f);
 
+	// Render mini map
+	RenderToTexture();
+
+	// Re adjust camera
+	if (overheadCam) {
+
+		// OVERHEAD CAM
+		m_Camera->SetPosition(player->getPosition().x, 20.0f, player->getPosition().z);
+		m_Camera->SetRotation(90.0f, player->getRotation().y, 0.0f);
+	}
+	else {
+		// FIRST PERSON CAM
+		m_Camera->SetPosition(player->getPosition().x, 0.0f, player->getPosition().z);
+		m_Camera->SetRotation(0.0f, player->getRotation().y, 0.0f);
+	} 
+
+	/*
 	m_Camera->SetPosition(cPos.x, cPos.y, cPos.z);
 	m_Camera->SetRotation(cRot.x, cRot.y, cRot.z);
+	*/
 
 	// Generate the view matrix based on the camera's position.
+
+	// Clear the scene.
+	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+
 	m_Camera->Render();
 
 	// Get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
@@ -932,24 +996,6 @@ bool ApplicationClass::RenderGraphics()
 	}
 	*/
 
-	rotation = (float)player->getRotation().y * 0.0174532925f;
-
-	D3DXMatrixRotationY(&worldMatrix, rotation);
-	D3DXMatrixTranslation(&translateMatrix, player->getPosition().x, 0.0f, player->getPosition().z);
-	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
-	
-	player->getMesh()->Render(m_Direct3D->GetDeviceContext());
-	result = lightShader->Render(m_Direct3D->GetDeviceContext(), player->getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		m_Light->GetDirection(), m_Light->GetDiffuseColor(), 0.0f, player->getMesh()->getTexture1());
-
-	if (!result) {
-		return false;
-	}
-
-	// Turn on the alpha blending before rendering the text.
-	m_Direct3D->TurnOffAlphaBlending();
-	
-
 	for (int i = 0; i < LEVEL_WIDTH; i++) {
 		for (int j = 0; j < LEVEL_HEIGHT; j++) {
 			// Translate to the walls position
@@ -957,9 +1003,30 @@ bool ApplicationClass::RenderGraphics()
 
 			levelLayout[i][j].getMesh()->Render(m_Direct3D->GetDeviceContext());
 			pLightShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-			levelLayout[i][j].getMesh()->getTexture1(),  &m_Light->GetDiffuseColor(), &m_Light->GetPosition());
+				levelLayout[i][j].getMesh()->getTexture1(), &m_Light->GetDiffuseColor(), &m_Light->GetPosition());
 		}
 	}
+
+	rotation = (float)player->getRotation().y * 0.0174532925f;
+
+	D3DXMatrixRotationY(&worldMatrix, rotation);
+	D3DXMatrixTranslation(&translateMatrix, player->getPosition().x, 0.0f, player->getPosition().z);
+	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
+
+	m_Direct3D->TurnOnAlphaBlending();
+
+	player->getMesh()->Render(m_Direct3D->GetDeviceContext());
+	result = textureShader->Render(m_Direct3D->GetDeviceContext(), player->getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		player->getMesh()->getTexture1());
+
+	if (!result) {
+		return false;
+	}
+
+	
+
+	// Turn on the alpha blending before rendering the text.
+	m_Direct3D->TurnOffAlphaBlending();
 
 	cameraPos = m_Camera->GetPosition();
 
@@ -997,7 +1064,6 @@ bool ApplicationClass::RenderGraphics()
 		
 	// Turn on the alpha blending before rendering the text.
 	m_Direct3D->TurnOnAlphaBlending();
-
 
 	// Render the text user interface elements.
 	result = m_Text->Render(m_Direct3D->GetDeviceContext(), m_FontShader, worldMatrix, orthoMatrix);
@@ -1112,25 +1178,6 @@ bool ApplicationClass::RenderToTexture()
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 	m_Direct3D->GetOrthoMatrix(orthoMatrix);
 
-	rotation = (float)player->getRotation().y * 0.0174532925f;
-
-	D3DXMatrixRotationY(&worldMatrix, rotation);
-	D3DXMatrixTranslation(&translateMatrix, player->getPosition().x, 0.0f, player->getPosition().z);
-	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
-
-	player->getMesh()->Render(m_Direct3D->GetDeviceContext());
-	result = lightShader->Render(m_Direct3D->GetDeviceContext(), player->getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		m_Light->GetDirection(), m_Light->GetDiffuseColor(), 0.0f, player->getMesh()->getTexture1());
-
-	if (!result) {
-		return false;
-	}
-
-	// Turn on the alpha blending before rendering the text.
-	m_Direct3D->TurnOffAlphaBlending();
-
-	
-
 	for (int i = 0; i < LEVEL_WIDTH; i++) {
 		for (int j = 0; j < LEVEL_HEIGHT; j++) {
 			// Translate to the walls position
@@ -1138,23 +1185,43 @@ bool ApplicationClass::RenderToTexture()
 
 			levelLayout[i][j].getMesh()->Render(m_Direct3D->GetDeviceContext());
 			textureShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-				levelLayout[i][j].getMesh()->getTexture1() /*,  &m_Light->GetDiffuseColor(), &m_Light->GetPosition() */);
+				levelLayout[i][j].getMesh()->getTexture2() /*,  &m_Light->GetDiffuseColor(), &m_Light->GetPosition() */);
 		}
 	}
 
+	// m_Direct3D->TurnOnAlphaBlending();
+
+	rotation = (float)player->getRotation().y * 0.0174532925f;
+
+	D3DXMatrixRotationY(&worldMatrix, rotation);
+	D3DXMatrixTranslation(&translateMatrix, player->getPosition().x, 0.0f, player->getPosition().z);
+	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
+
+	// m_Direct3D->TurnOnAlphaBlending();
+
+	player->getMesh()->Render(m_Direct3D->GetDeviceContext());
+	result = textureShader->Render(m_Direct3D->GetDeviceContext(), player->getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		player->getMesh()->getTexture1());
+
+	if (!result) {
+		return false;
+	}
+
+	// Turn on the alpha blending before rendering the text.
+	// m_Direct3D->TurnOffAlphaBlending();
 
 	cameraPos = m_Camera->GetPosition();
 
-	modelPos.x = 8.0f;
+	modelPos.x = roomVector.back()->getCenterX();
 	modelPos.y = 0.0f;
-	modelPos.z = 8.0f;
+	modelPos.z = roomVector.back()->getCenterY();
 
-	angle = atan2(modelPos.x - cameraPos.x, modelPos.z - cameraPos.z) * (180.0 / D3DX_PI);
+	angle = 90.0f;
 
 	rotation = (float)angle * 0.0174532925f;
 
 	// Setup the rotation the billboard at the origin using the world matrix.
-	D3DXMatrixRotationY(&worldMatrix, rotation);
+	D3DXMatrixRotationX(&worldMatrix, 1.5708f);
 
 	// Setup the translation matrix from the billboard model.
 	D3DXMatrixTranslation(&translateMatrix, modelPos.x, modelPos.y, modelPos.z);
@@ -1174,28 +1241,8 @@ bool ApplicationClass::RenderToTexture()
 
 	D3DXMatrixRotationX(&worldMatrix, 0.0f);
 
-	// Turn off the Z buffer to begin all 2D rendering.
-	m_Direct3D->TurnZBufferOff();
-
-	// Turn on the alpha blending before rendering the text.
-	m_Direct3D->TurnOnAlphaBlending();
-
-
-	// Render the text user interface elements.
-	result = m_Text->Render(m_Direct3D->GetDeviceContext(), m_FontShader, worldMatrix, orthoMatrix);
-	if (!result)
-	{
-		return false;
-	}
-
-	// Turn off alpha blending after rendering the text.
-	m_Direct3D->TurnOffAlphaBlending();
-
-	// Turn the Z buffer back on now that all 2D rendering has completed.
-	m_Direct3D->TurnZBufferOn();
-
 	// Reset the render target back to the original back buffer and not the render to texture anymore.
 	m_Direct3D->SetBackBufferRenderTarget();
 
-	return false;
+	return true;
 }

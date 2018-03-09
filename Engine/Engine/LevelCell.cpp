@@ -13,7 +13,7 @@ LevelCell::~LevelCell()
 {
 }
 
-bool LevelCell::initialize(ID3D11Device * device, char * modelFilename, WCHAR * textureFilename)
+bool LevelCell::initialize(ID3D11Device * device, char * modelFilename, WCHAR * textureFilename, WCHAR * textureFilename2)
 {
 	bool result;
 
@@ -22,7 +22,7 @@ bool LevelCell::initialize(ID3D11Device * device, char * modelFilename, WCHAR * 
 		return false;
 	}
 
-	result = cellMesh->Initialize(device, modelFilename, textureFilename, NULL, NULL);
+	result = cellMesh->Initialize(device, modelFilename, textureFilename, textureFilename2, NULL);
 	if (!result) {
 		return false;
 	}

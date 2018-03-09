@@ -65,4 +65,6 @@ void Item::initialize()
 	itemPrefix = prefixes.at(rand() % prefixes.size());
 	itemName = objects.at(rand() % objects.size());
 	itemSuffix = suffixes.at(rand() % suffixes.size());
+
+	power = rand() % 100;
 }

@@ -22,6 +22,7 @@ public:
 
 	void setFrameTime(float time) { frameTime = time; };
 	int getDirection() { return direction; };
+	int equippedWeapon;
 
 	// Movement
 	void moveRight(bool keyDown);

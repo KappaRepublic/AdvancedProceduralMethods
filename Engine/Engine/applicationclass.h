@@ -86,6 +86,7 @@ public:
 	void adjustLevel();
 	void createHCorridor(int x1, int x2, int y);
 	void createVCorridor(int y1, int y2, int x);
+	void clearUnusedCells();
 
 	LevelCell levelLayout[LEVEL_WIDTH][LEVEL_HEIGHT];
 
