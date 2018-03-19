@@ -21,6 +21,7 @@ ApplicationClass::ApplicationClass()
 	pLightShader = 0;
 	textureShader = 0;
 	transShader = 0;
+	fogShader = 0;
 
 	m_Light = 0;
 
@@ -60,7 +61,14 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	int videoMemory;
 
 	srand(time(NULL));
-	
+
+	/*
+	Object* tempObject = new Object();
+	tempObject->init(ObjectType::chest, m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/chestTexture.png", NULL,
+		roomVector.back()->getCenterX(), 0.0f, roomVector.back()->getCenterY(), 0.0f, 0.0f, 0.0f);
+	levelObjects.push_back(tempObject);
+	*/
+
 	// Create the input object.  The input object will be used to handle reading the keyboard and mouse input from the user.
 	m_Input = new InputClass;
 	if(!m_Input)
@@ -271,6 +279,16 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		return false;
 	}
 
+	fogShader = new FogShaderClass;
+	if (!fogShader) {
+		return false;
+	}
+
+	result = fogShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	if (!result) {
+		MessageBox(hwnd, L"Could not initialize fog shader", L"Error", MB_OK);
+	}
+
 	// Create the light object.
 	m_Light = new LightClass;
 	if(!m_Light)
@@ -291,7 +309,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		return false;
 	}
 
-	result = player->initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/playerIcon.png", 6.0f, 0.0f, 6.0f, 0.0f, 0.0f, 0.0f);
+	result = player->initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/playerIcon.png", L"../Engine/data/player_status_char_2.png", 6.0f, 0.0f, 6.0f, 0.0f, 0.0f, 0.0f);
 	if (!result) {
 		MessageBox(hwnd, L"Could not initialize the example cube object.", L"Error", MB_OK);
 		return false;
@@ -378,7 +396,6 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	return true;
 }
 
-
 void ApplicationClass::Shutdown()
 {
 	// Release the light object.
@@ -450,6 +467,12 @@ void ApplicationClass::Shutdown()
 		transShader->Shutdown();
 		delete transShader;
 		transShader = 0;
+	}
+
+	if (fogShader) {
+		fogShader->Shutdown();
+		delete fogShader;
+		fogShader = 0;
 	}
 
 	if (player) {
@@ -537,56 +560,19 @@ bool ApplicationClass::Frame()
 
 	ImGui_ImplDX11_NewFrame();
 
+	mHandler.callMainMenu(true, inventoryActive);
+	mHandler.callInventory(inventoryActive, *player, inventory);
+
 	/*
-	ImGui::Begin("Paulus", &my_tool_active, ImVec2(0, 0), ImGuiWindowFlags_AlwaysAutoResize);
-	ImGui::Text("This is some test dialogue.\nA Matt in every house by 2020.");
-	ImGui::End();
-
-	ImGui::Begin("Flubbergam", &my_tool_active, ImVec2(0, 0), ImGuiWindowFlags_AlwaysAutoResize);
-	ImGui::Text("OIAfpfewputWTHNWREHREIGUHREGI");
-	ImGui::End();
-	*/
-
-	// Menu System
-	ImGui::Begin("Menu", &my_tool_active, ImVec2(0, 0), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize);
-	if (ImGui::Button("Inventory", ImVec2(72, 72))) {
-		testWindow = !testWindow;
-	}
-	ImGui::SameLine();
-	ImGui::Button("Equipment", ImVec2(72, 72));
-	ImGui::SameLine(); // :)
-	if (ImGui::Button("Quit Game", ImVec2(72, 72))) {
-		exit(-1);
-	}
-	ImGui::End();
-
-	ImGui::Begin("Inventory", &inventoryActive, ImVec2(0, 0), ImGuiWindowFlags_AlwaysAutoResize);
-	for (int i = 0; i < inventory.size(); i++) {
-		char test[150];
-
-		// sprintf(test, inventory.at(i)->itemPrefix);
-
-		strcpy_s(test, inventory.at(i)->itemPrefix);
-		strcat_s(test, inventory.at(i)->itemName);
-		strcat_s(test, inventory.at(i)->itemSuffix);
-		// strcat_s(test, (char*)inventory.at(i)->power);
-
-		if (ImGui::Selectable(test, player->equippedWeapon == i)) {
-			player->equippedWeapon = i;
-		}
-		ImGui::SameLine(350); ImGui::Text("(+%d DMG)", inventory.at(i)->power);
-	}
-	ImGui::End(); // (:
-
 	ImGui::Begin("Jason", &testWindow);
 	ImGui::Text("Well met, traveller.\nWhat bring's you to these lands?");
 	ImGui::End();
+	*/
 
 	ImGui::Begin("Minimap", &testWindow, ImVec2(196, 196), ImGuiWindowFlags_NoResize);
 	ImVec2 pos = ImGui::GetCursorScreenPos();
 	ImGui::Image(m_RenderTexture->GetShaderResourceView(), ImVec2(284, 160));
-	if (ImGui::IsItemHovered())
-	{
+	if (ImGui::IsItemHovered()) {
 		ImGui::BeginTooltip();
 		float focus_sz = 32.0f;
 		float focus_x = io.MousePos.x - pos.x - focus_sz * 0.5f; if (focus_x < 0.0f) focus_x = 0.0f; else if (focus_x > 284 - focus_sz) focus_x = 284 - focus_sz;
@@ -600,11 +586,12 @@ bool ApplicationClass::Frame()
 	}
 	ImGui::End();
 
-	ImGui::Begin("Player Status", &testWindow);
-	char buf[32];
-	sprintf(buf, "HP: %d/%d", (int)(0.0f * 100), 100);
-	ImGui::ProgressBar(0.0f, ImVec2(-1.0f, 0.f), buf);
+	ImGui::Begin("Equipment", &testWindow);
+	// ImGui::Button()
+	ImGui::Image(player->getMesh()->getTexture2(), ImVec2(256, 397));
 	ImGui::End();
+
+	mHandler.callPlayerStatus(true, *player);
 
 	ImGui::Begin("Generate Dungeon", &testWindow);
 	ImGui::End();
@@ -675,7 +662,7 @@ void ApplicationClass::generateRooms()
 	// Initialise the level layout
 	for (int j = 0; j < LEVEL_HEIGHT; j++) {
 		for (int i = 0; i < LEVEL_WIDTH; i++) {
-			levelLayout[i][j].initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/bricks.jpg", L"../Engine/data/minimapWall.png");
+			levelLayout[i][j].initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/wall.jpg", L"../Engine/data/minimapWall.png");
 			levelLayout[i][j].wall = true;
 		}
 	}
@@ -693,7 +680,7 @@ void ApplicationClass::generateRooms()
 	}
 
 	Room* tempRoom = new Room;
-	tempRoom->initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/testTexture.png", randX, randY, randWidth, randHeight);
+	tempRoom->initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/woodenFloor.jpg", randX, randY, randWidth, randHeight);
 
 	roomVector.push_back(tempRoom);
 
@@ -712,7 +699,7 @@ void ApplicationClass::generateRooms()
 		}
 
 		Room* tempRoom = new Room;
-		tempRoom->initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/testTexture.png", randX, randY, randWidth, randHeight);
+		tempRoom->initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/woodenFloor.jpg", randX, randY, randWidth, randHeight);
 
 		// Check if the room collides with any existing room
 
@@ -729,12 +716,14 @@ void ApplicationClass::generateRooms()
 			}
 		}
 
+		// If the room generation succeeded 
 		if (!failed) {
 			// Generate the corridor between new room and last one
 			newCenter.x = tempRoom->getCenterX();
 			newCenter.y = tempRoom->getCenterY();
 
-			if (roomVector.size() != 0) {
+			if (roomVector.size() != 0) 
+			{
 				D3DXVECTOR2 prevCenter;
 				prevCenter.x = roomVector.back()->getCenterX();
 				prevCenter.y = roomVector.back()->getCenterY();
@@ -753,6 +742,29 @@ void ApplicationClass::generateRooms()
 
 			roomVector.push_back(tempRoom);
 
+			// For testing, spawn a random object in the room
+
+			Object* tempObject = new Object();
+
+			
+			if (rand() % 2 == 0) {
+				tempObject->init(ObjectType::chest, m_Direct3D->GetDevice(), "../Engine/data/player.txt", L"../Engine/data/chestTexture.png", L"../Engine/data/chestTexture.png",
+					roomVector.back()->getCenterX(), 0.0f, roomVector.back()->getCenterY(), 0.0f, 0.0f, 0.0f);
+			}
+			else {
+				tempObject->init(ObjectType::npc, m_Direct3D->GetDevice(), "../Engine/data/player.txt", L"../Engine/data/npc.png", L"../Engine/data/npc.png",
+					roomVector.back()->getCenterX(), 0.0f, roomVector.back()->getCenterY(), 0.0f, 0.0f, 0.0f);
+			}
+
+			levelObjects.push_back(tempObject);
+			
+			/*
+			delete tempObject;
+			tempObject = 0;
+			*/
+			
+			
+
 		}
 		
 		/*
@@ -770,7 +782,7 @@ void ApplicationClass::adjustLevel()
 	for (Room* const& i : roomVector) {
 		for (int y = i->getY1(); y < i->getY2(); y++) {
 			for (int x = i->getX1(); x < i->getX2(); x++) {
-				levelLayout[x+1][y+1].initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/stoneFloor.jpg", L"../Engine/data/minimapFloor.png");
+				levelLayout[x+1][y+1].initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/woodenFloor.jpg", L"../Engine/data/minimapFloor.png");
 				levelLayout[x+1][y+1].wall = false;
 			}	
 		}	
@@ -781,14 +793,14 @@ void ApplicationClass::adjustLevel()
 
 void ApplicationClass::createHCorridor(int x1, int x2, int y) {
 	for (int x = min(x1, x2); x <= max(x1, x2); x++) {
-		levelLayout[x + 1][y + 1].initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/stoneFloor.jpg", L"../Engine/data/minimapFloor.png");
+		levelLayout[x + 1][y + 1].initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/woodenFloor.jpg", L"../Engine/data/minimapFloor.png");
 		levelLayout[x + 1][y + 1].wall = false;
 	}
 }
 
 void ApplicationClass::createVCorridor(int y1, int y2, int x) {
 	for (int y = min(y1, y2); y <= max(y1, y2); y++) {
-		levelLayout[x + 1][y + 1].initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/stoneFloor.jpg", L"../Engine/data/minimapFloor.png");
+		levelLayout[x + 1][y + 1].initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/woodenFloor.jpg", L"../Engine/data/minimapFloor.png");
 		levelLayout[x + 1][y + 1].wall = false;
 	}
 }
@@ -847,6 +859,7 @@ bool ApplicationClass::HandleInput(float frameTime)
 	keyDown = m_Input->isQPressed();
 	if (keyDown) {
 		if (!inputCameraChange) {
+			player->inflictDamageToHP(20);
 			overheadCam = !overheadCam;
 			inputCameraChange = true;
 		}
@@ -938,6 +951,13 @@ bool ApplicationClass::RenderGraphics()
 	double angle;
 	float rotation;
 	bool result;
+	float fogColour, fogStart, fogEnd;
+
+	// Set fog colour to gray
+	fogColour = 0.2f;
+	// Set the start and end of the fog
+	fogStart = -2.0f;
+	fogEnd = 7.0f;
 
 	D3DXVECTOR3 cPos, cRot;
 
@@ -972,7 +992,7 @@ bool ApplicationClass::RenderGraphics()
 	// Generate the view matrix based on the camera's position.
 
 	// Clear the scene.
-	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+	m_Direct3D->BeginScene(fogColour, fogColour, fogColour, 1.0f);
 
 	m_Camera->Render();
 
@@ -1002,8 +1022,12 @@ bool ApplicationClass::RenderGraphics()
 			D3DXMatrixTranslation(&worldMatrix, (float)i, 0.0f, (float)j);
 
 			levelLayout[i][j].getMesh()->Render(m_Direct3D->GetDeviceContext());
+			fogShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+				levelLayout[i][j].getMesh()->getTexture1(), fogStart, fogEnd);
+			/*
 			pLightShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
 				levelLayout[i][j].getMesh()->getTexture1(), &m_Light->GetDiffuseColor(), &m_Light->GetPosition());
+			*/
 		}
 	}
 
@@ -1023,13 +1047,48 @@ bool ApplicationClass::RenderGraphics()
 		return false;
 	}
 
-	
-
 	// Turn on the alpha blending before rendering the text.
-	m_Direct3D->TurnOffAlphaBlending();
+	m_Direct3D->TurnOnAlphaBlending();
+
+	// Render all objects in the level
+
+	D3DXMatrixRotationX(&worldMatrix, 0.0f);
 
 	cameraPos = m_Camera->GetPosition();
+	
+	if (levelObjects.size() > 0)
+	{
+		for (int i = 0; i < levelObjects.size(); i++) {
+			modelPos.x = levelObjects.at(i)->getPosition().x;
+			modelPos.y = 0.0f;
+			modelPos.z = levelObjects.at(i)->getPosition().z;
 
+			angle = atan2(modelPos.x - cameraPos.x, modelPos.z - cameraPos.z) * (180.0 / D3DX_PI);
+
+			rotation = (float)angle * 0.0174532925f;
+
+			// Setup the rotation the billboard at the origin using the world matrix.
+			D3DXMatrixRotationY(&worldMatrix, rotation);
+
+			// Setup the translation matrix from the billboard model.
+			D3DXMatrixTranslation(&translateMatrix, modelPos.x, modelPos.y, modelPos.z);
+
+			// Finally combine the rotation and translation matrices to create the final world matrix for the billboard model.
+			D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
+
+			levelObjects.at(i)->getMesh()->Render(m_Direct3D->GetDeviceContext());
+			fogShader->Render(m_Direct3D->GetDeviceContext(), levelObjects.at(i)->getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, levelObjects.at(i)->getMesh()->getTexture1(), fogStart, fogEnd);
+
+		}
+	}
+	
+
+	/*
+	m_Direct3D->TurnOffAlphaBlending();
+
+	
+
+	
 	modelPos.x = roomVector.back()->getCenterX();
 	modelPos.y = 0.0f;
 	modelPos.z = roomVector.back()->getCenterY();
@@ -1044,18 +1103,21 @@ bool ApplicationClass::RenderGraphics()
 	// Setup the translation matrix from the billboard model.
 	D3DXMatrixTranslation(&translateMatrix, modelPos.x, modelPos.y, modelPos.z);
 
-	// Finally combine the rotation and translation matrices to create the final world matrix for the billboard model.
 	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
+	
 
+	// Render all objects in the level
+	
 	// Turn on the alpha blending before rendering the text.
 	m_Direct3D->TurnOnAlphaBlending();
 	// D3DXMatrixTranslation(&worldMatrix, 8.0f, 0.0f, 8.5f);
 
 	npc->Render(m_Direct3D->GetDeviceContext());
-	textureShader->Render(m_Direct3D->GetDeviceContext(), npc->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, npc->getTexture1());
+	fogShader->Render(m_Direct3D->GetDeviceContext(), npc->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, npc->getTexture1(), fogStart, fogEnd);
 
 	// Turn on the alpha blending before rendering the text.
 	m_Direct3D->TurnOffAlphaBlending();
+	*/
 
 	D3DXMatrixRotationX(&worldMatrix, 0.0f);
 
@@ -1203,8 +1265,32 @@ bool ApplicationClass::RenderToTexture()
 	result = textureShader->Render(m_Direct3D->GetDeviceContext(), player->getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
 		player->getMesh()->getTexture1());
 
+	// m_Direct3D->TurnOffAlphaBlending();
+
 	if (!result) {
 		return false;
+	}
+
+	if (levelObjects.size() > 0)
+	{
+		for (int i = 0; i < levelObjects.size(); i++) {
+			modelPos.x = levelObjects.at(i)->getPosition().x;
+			modelPos.y = 0.0f;
+			modelPos.z = levelObjects.at(i)->getPosition().z;
+
+			// Setup the rotation the billboard at the origin using the world matrix.
+			D3DXMatrixRotationX(&worldMatrix, 1.5708f);
+
+			// Setup the translation matrix from the billboard model.
+			D3DXMatrixTranslation(&translateMatrix, modelPos.x, modelPos.y, modelPos.z);
+
+			// Finally combine the rotation and translation matrices to create the final world matrix for the billboard model.
+			D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
+
+			levelObjects.at(i)->getMesh()->Render(m_Direct3D->GetDeviceContext());
+			textureShader->Render(m_Direct3D->GetDeviceContext(), levelObjects.at(i)->getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, levelObjects.at(i)->getMesh()->getTexture2());
+
+		}
 	}
 
 	// Turn on the alpha blending before rendering the text.

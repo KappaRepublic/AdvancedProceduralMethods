@@ -18,6 +18,7 @@ Item::Item()
 		"Just a ",
 		"Undead ",
 		"Worthless ",
+		"Teacup", 
 		""
 	};
 

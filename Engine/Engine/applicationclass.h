@@ -37,6 +37,7 @@ const float SCREEN_NEAR = 0.1f;
 #include "PointLightShaderClass.h"
 #include "textureshaderclass.h"
 #include "transparentshaderclass.h"
+#include "Fogshaderclass.h"
 
 #include "lightclass.h"
 #include "perlinnoise.h"
@@ -48,6 +49,7 @@ const float SCREEN_NEAR = 0.1f;
 #include "Item.h"
 #include "Rendertextureclass.h"
 #include "Debugwindowclass.h"
+#include "Object.h"
 
 #include <list>
 #include <time.h>
@@ -58,6 +60,7 @@ const float SCREEN_NEAR = 0.1f;
 /// IMGUI //
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
+#include "MenuHandler.h"
 
 
 
@@ -81,6 +84,7 @@ public:
 	std::vector<int> anArrayOfBools;
 	std::list<Room*> roomVector;
 	std::vector<Item*> inventory;
+	std::vector<Object*> levelObjects;
 
 	void generateRooms();
 	void adjustLevel();
@@ -119,6 +123,7 @@ private:
 	PointLightShaderClass* pLightShader;
 	TextureShaderClass* textureShader;
 	TransparentShaderClass* transShader;
+	FogShaderClass* fogShader;
 
 	LightClass* m_Light;
 
@@ -137,6 +142,9 @@ private:
 	bool my_tool_active;
 	bool inventoryActive;
 	bool testWindow;
+
+	// Menu Handler
+	MenuHandler mHandler;
 
 };
 

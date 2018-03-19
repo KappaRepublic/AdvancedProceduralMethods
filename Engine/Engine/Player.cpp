@@ -15,7 +15,7 @@ Player::~Player()
 }
 
 
-bool Player::initialize(ID3D11Device * device, char * modelFilename, WCHAR * textureFilename, float posX, float posY, float posZ, float rotX, float rotY, float rotZ)
+bool Player::initialize(ID3D11Device * device, char * modelFilename, WCHAR * textureFilename, WCHAR* statusFilename, float posX, float posY, float posZ, float rotX, float rotY, float rotZ)
 {
 	bool result;
 
@@ -26,9 +26,13 @@ bool Player::initialize(ID3D11Device * device, char * modelFilename, WCHAR * tex
 	levelPosY = (int)posY;
 
 	mesh = new ModelClass;
-	mesh->Initialize(device, modelFilename, textureFilename, NULL, NULL);
+	mesh->Initialize(device, modelFilename, textureFilename, statusFilename, NULL);
 
 	inMotion = false;
+
+	// Set up player stats
+	healthPointsMax = 100;
+	healthPointsCur = healthPointsMax;
 
 	return true;
 }

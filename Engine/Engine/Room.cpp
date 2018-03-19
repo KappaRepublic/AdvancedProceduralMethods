@@ -22,8 +22,8 @@ void Room::initialize(ID3D11Device* device, char* modelFilename, WCHAR* textureF
 	roomWidth = width;
 	roomHeight = height;
 
-	centerX = floor((x1 + x2) / 2);
-	centerY = floor((y1 + y2) / 2);
+	centerX = ceil((x1 + x2) / 2);
+	centerY = ceil((y1 + y2) / 2);
 
 	floorMesh = new ModelClass;
 	floorMesh->Initialize(device, modelFilename, textureFilename, NULL, NULL);

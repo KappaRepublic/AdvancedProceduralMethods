@@ -86,6 +86,7 @@
     <ClCompile Include="cpuclass.cpp" />
     <ClCompile Include="d3dclass.cpp" />
     <ClCompile Include="Debugwindowclass.cpp" />
+    <ClCompile Include="Fogshaderclass.cpp" />
     <ClCompile Include="fontclass.cpp" />
     <ClCompile Include="fontshaderclass.cpp" />
     <ClCompile Include="fpsclass.cpp" />
@@ -99,7 +100,9 @@
     <ClCompile Include="lightclass.cpp" />
     <ClCompile Include="lightshaderclass.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MenuHandler.cpp" />
     <ClCompile Include="modelclass.cpp" />
+    <ClCompile Include="Object.cpp" />
     <ClCompile Include="perlinnoise.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PointLightShaderClass.cpp" />
@@ -123,6 +126,7 @@
     <ClInclude Include="cpuclass.h" />
     <ClInclude Include="d3dclass.h" />
     <ClInclude Include="Debugwindowclass.h" />
+    <ClInclude Include="Fogshaderclass.h" />
     <ClInclude Include="fontclass.h" />
     <ClInclude Include="fontshaderclass.h" />
     <ClInclude Include="fpsclass.h" />
@@ -134,7 +138,9 @@
     <ClInclude Include="Item.h" />
     <ClInclude Include="LevelCell.h" />
     <ClInclude Include="lightclass.h" />
+    <ClInclude Include="MenuHandler.h" />
     <ClInclude Include="modelclass.h" />
+    <ClInclude Include="Object.h" />
     <ClInclude Include="perlinnoise.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PointLightShaderClass.h" />
@@ -153,10 +159,17 @@
     <ClInclude Include="transparentshaderclass.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram.cd" />
     <None Include="color.ps">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </None>
     <None Include="color.vs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="fog.ps">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="fog.vs">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </None>
     <None Include="font.ps">

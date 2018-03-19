@@ -135,6 +135,15 @@
     <ClCompile Include="imgui_impl_dx11.cpp">
       <Filter>IMGUI</Filter>
     </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Fogshaderclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h">
@@ -236,6 +245,15 @@
     <ClInclude Include="imgui_internal.h">
       <Filter>IMGUI</Filter>
     </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Fogshaderclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="terrain.vs">
@@ -278,6 +296,13 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="transparent.ps">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="ClassDiagram.cd" />
+    <None Include="fog.ps">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="fog.vs">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

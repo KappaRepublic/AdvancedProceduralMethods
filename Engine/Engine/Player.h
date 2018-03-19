@@ -9,7 +9,7 @@ public:
 	Player(const Player&);
 	~Player();
 
-	bool initialize(ID3D11Device* device, char* modelFilename, WCHAR* textureFilename, float posX, float posY, float posZ, float rotX, float rotY, float rotZ);
+	bool initialize(ID3D11Device* device, char* modelFilename, WCHAR* textureFilename, WCHAR* statusFilename, float posX, float posY, float posZ, float rotX, float rotY, float rotZ);
 	void shutDown();
 
 	ModelClass* getMesh() { return mesh; };
@@ -23,6 +23,13 @@ public:
 	void setFrameTime(float time) { frameTime = time; };
 	int getDirection() { return direction; };
 	int equippedWeapon;
+
+	// Player status getters and setters
+	int getHealthMax() { return healthPointsMax; };
+	int getHealthCur() { return healthPointsCur; };
+	void setHealthMax(int value) { healthPointsMax = value; };
+	void setHealthCur(int value) { healthPointsCur = value; };
+	void inflictDamageToHP(int value) { healthPointsCur -= value; };
 
 	// Movement
 	void moveRight(bool keyDown);
@@ -47,4 +54,8 @@ private:
 	int direction = 0;
 
 	bool inMotion;
+
+	// In game status
+	int healthPointsMax;
+	int healthPointsCur;
 };
