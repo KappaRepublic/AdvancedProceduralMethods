@@ -1,3 +1,3 @@
 ## Advanced Procedural Methods
 
-![Hey](https://imgur.com/E9FVKNZ)
+![](https://i.imgur.com/E9FVKNZ.jpg)
