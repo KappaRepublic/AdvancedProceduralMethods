@@ -2,6 +2,8 @@
 
 #define MOVESPEED 0.125f
 #include "modelclass.h"
+#include "Item.h"
+#include "Object.h"
 
 class Player {
 public:
@@ -11,6 +13,8 @@ public:
 
 	bool initialize(ID3D11Device* device, char* modelFilename, WCHAR* textureFilename, WCHAR* statusFilename, float posX, float posY, float posZ, float rotX, float rotY, float rotZ);
 	void shutDown();
+
+	void interact(vector<Object*>& objs, vector<Item*>& inv);
 
 	ModelClass* getMesh() { return mesh; };
 	void setPosition(float posX, float posY, float posZ);

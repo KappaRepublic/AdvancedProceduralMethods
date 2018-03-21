@@ -32,3 +32,13 @@ void Object::shutDown()
 		mesh = 0;
 	}
 }
+
+Item * Object::chestOpen()
+{
+	Item *tempItem = new Item();
+	tempItem->initialize();
+
+	return tempItem;
+}
+
+

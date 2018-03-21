@@ -303,7 +303,6 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	m_Light->SetDiffuseColor(0.9f, 0.7f, 0.4f, 1.0f);
 	m_Light->SetDirection(0.5f, -1.0f, 0.5f);
 
-	// EXAMPLE CODE BEYOND THIS POINT
 	player = new Player;
 	if (!player) {
 		return false;
@@ -541,6 +540,11 @@ void ApplicationClass::Shutdown()
 		m_Input = 0;
 	}
 
+	// Clear lists and vectors
+	levelObjects.clear();
+	roomVector.clear();
+	inventory.clear();
+
 	return;
 }
 
@@ -548,26 +552,12 @@ bool ApplicationClass::Frame()
 {
 	bool result;
 
-
 	ImGuiIO& io = ImGui::GetIO();
-	// 
-	int mouseX, mouseY;
-	m_Input->GetMouseLocation(mouseX, mouseY);
-	// io.MousePos.x = mouseX;
-	// io.MousePos.y = mouseY;
-	// io.MouseDown[0] = m_Input->MouseLeftClick();
-	// io.MouseDown[1] = m_Input->MouseRightClick();
-
+	// Call a new frame for ImGui
 	ImGui_ImplDX11_NewFrame();
 
 	mHandler.callMainMenu(true, inventoryActive);
 	mHandler.callInventory(inventoryActive, *player, inventory);
-
-	/*
-	ImGui::Begin("Jason", &testWindow);
-	ImGui::Text("Well met, traveller.\nWhat bring's you to these lands?");
-	ImGui::End();
-	*/
 
 	ImGui::Begin("Minimap", &testWindow, ImVec2(196, 196), ImGuiWindowFlags_NoResize);
 	ImVec2 pos = ImGui::GetCursorScreenPos();
@@ -592,8 +582,24 @@ bool ApplicationClass::Frame()
 	ImGui::End();
 
 	mHandler.callPlayerStatus(true, *player);
+	mHandler.callPlayerActions(true, *player, levelObjects, inventory);
 
 	ImGui::Begin("Generate Dungeon", &testWindow);
+	if (ImGui::TreeNode("Basic Level Generation"))
+	{
+		ImGui::InputInt("Level Width", &levelWidth);
+		ImGui::InputInt("Level Height", &levelHeight);
+		ImGui::InputInt("No. of Room Attempts", &noOfAttempts);
+		ImGui::InputInt("Max Room Width", &maxRoomWidth);
+		ImGui::InputInt("Max Room Height", &maxRoomHeight);
+		ImGui::InputInt("Min Room Width", &minRoomWidth);
+		ImGui::InputInt("Min Room Height", &minRoomHeight);
+
+		if (ImGui::Button("Generate Level")) {
+		}
+
+		ImGui::TreePop();
+	}
 	ImGui::End();
 
 	// Read the user input.
@@ -658,6 +664,7 @@ void ApplicationClass::generateRooms()
 	newCenter.x = 0;
 	newCenter.y = 0;
 
+	levelObjects.clear();
 	roomVector.clear();
 	// Initialise the level layout
 	for (int j = 0; j < LEVEL_HEIGHT; j++) {
@@ -973,7 +980,6 @@ bool ApplicationClass::RenderGraphics()
 
 	// Re adjust camera
 	if (overheadCam) {
-
 		// OVERHEAD CAM
 		m_Camera->SetPosition(player->getPosition().x, 20.0f, player->getPosition().z);
 		m_Camera->SetRotation(90.0f, player->getRotation().y, 0.0f);
@@ -1086,9 +1092,6 @@ bool ApplicationClass::RenderGraphics()
 	/*
 	m_Direct3D->TurnOffAlphaBlending();
 
-	
-
-	
 	modelPos.x = roomVector.back()->getCenterX();
 	modelPos.y = 0.0f;
 	modelPos.z = roomVector.back()->getCenterY();
@@ -1128,11 +1131,13 @@ bool ApplicationClass::RenderGraphics()
 	m_Direct3D->TurnOnAlphaBlending();
 
 	// Render the text user interface elements.
+	/*
 	result = m_Text->Render(m_Direct3D->GetDeviceContext(), m_FontShader, worldMatrix, orthoMatrix);
 	if(!result)
 	{
 		return false;
 	}
+	*/
 
 	// Turn off alpha blending after rendering the text.
 	m_Direct3D->TurnOffAlphaBlending();
@@ -1170,10 +1175,24 @@ bool ApplicationClass::checkForCollision(int direction, bool movingForward)
 			if (levelLayout[(int)player->getPosition().x][(int)player->getPosition().z + 1].wall == true) {
 				return true;
 			}
+			else {
+				for (int i = 0; i < levelObjects.size(); i++) {
+					if (levelObjects.at(i)->getPosition().x == (int)player->getPosition().x && levelObjects.at(i)->getPosition().z == (int)player->getPosition().z + 1 == true) {
+						return true;
+					}
+				}
+			}
 		}
 		else {
 			if (levelLayout[(int)player->getPosition().x][(int)player->getPosition().z - 1].wall == true) {
 				return true;
+			}
+			else {
+				for (int i = 0; i < levelObjects.size(); i++) {
+					if (levelObjects.at(i)->getPosition().x == (int)player->getPosition().x && levelObjects.at(i)->getPosition().z == (int)player->getPosition().z - 1 == true) {
+						return true;
+					}
+				}
 			}
 		}
 		
@@ -1183,10 +1202,24 @@ bool ApplicationClass::checkForCollision(int direction, bool movingForward)
 			if (levelLayout[(int)player->getPosition().x + 1][(int)player->getPosition().z].wall == true) {
 				return true;
 			}
+			else {
+				for (int i = 0; i < levelObjects.size(); i++) {
+					if (levelObjects.at(i)->getPosition().x == (int)player->getPosition().x + 1 && levelObjects.at(i)->getPosition().z == (int)player->getPosition().z == true) {
+						return true;
+					}
+				}
+			}
 		}
 		else {
 			if (levelLayout[(int)player->getPosition().x - 1][(int)player->getPosition().z].wall == true) {
 				return true;
+			}
+			else {
+				for (int i = 0; i < levelObjects.size(); i++) {
+					if (levelObjects.at(i)->getPosition().x == (int)player->getPosition().x - 1 && levelObjects.at(i)->getPosition().z == (int)player->getPosition().z == true) {
+						return true;
+					}
+				}
 			}
 		}
 		break;
@@ -1195,10 +1228,24 @@ bool ApplicationClass::checkForCollision(int direction, bool movingForward)
 			if (levelLayout[(int)player->getPosition().x][(int)player->getPosition().z - 1].wall == true) {
 				return true;
 			}
+			else {
+				for (int i = 0; i < levelObjects.size(); i++) {
+					if (levelObjects.at(i)->getPosition().x == (int)player->getPosition().x && levelObjects.at(i)->getPosition().z == (int)player->getPosition().z - 1 == true) {
+						return true;
+					}
+				}
+			}
 		}
 		else {
 			if (levelLayout[(int)player->getPosition().x][(int)player->getPosition().z + 1].wall == true) {
 				return true;
+			}
+			else {
+				for (int i = 0; i < levelObjects.size(); i++) {
+					if (levelObjects.at(i)->getPosition().x == (int)player->getPosition().x && levelObjects.at(i)->getPosition().z == (int)player->getPosition().z + 1 == true) {
+						return true;
+					}
+				}
 			}
 		}
 		break;
@@ -1207,10 +1254,24 @@ bool ApplicationClass::checkForCollision(int direction, bool movingForward)
 			if (levelLayout[(int)player->getPosition().x - 1][(int)player->getPosition().z].wall == true) {
 				return true;
 			}
+			else {
+				for (int i = 0; i < levelObjects.size(); i++) {
+					if (levelObjects.at(i)->getPosition().x == (int)player->getPosition().x - 1 && levelObjects.at(i)->getPosition().z == (int)player->getPosition().z == true) {
+						return true;
+					}
+				}
+			}
 		}
 		else {
 			if (levelLayout[(int)player->getPosition().x + 1][(int)player->getPosition().z].wall == true) {
 				return true;
+			}
+			else {
+				for (int i = 0; i < levelObjects.size(); i++) {
+					if (levelObjects.at(i)->getPosition().x == (int)player->getPosition().x + 1 && levelObjects.at(i)->getPosition().z == (int)player->getPosition().z == true) {
+						return true;
+					}
+				}
 			}
 		}
 		break;
@@ -1275,7 +1336,7 @@ bool ApplicationClass::RenderToTexture()
 	{
 		for (int i = 0; i < levelObjects.size(); i++) {
 			modelPos.x = levelObjects.at(i)->getPosition().x;
-			modelPos.y = 0.0f;
+			modelPos.y = -0.5f;
 			modelPos.z = levelObjects.at(i)->getPosition().z;
 
 			// Setup the rotation the billboard at the origin using the world matrix.
@@ -1292,40 +1353,6 @@ bool ApplicationClass::RenderToTexture()
 
 		}
 	}
-
-	// Turn on the alpha blending before rendering the text.
-	// m_Direct3D->TurnOffAlphaBlending();
-
-	cameraPos = m_Camera->GetPosition();
-
-	modelPos.x = roomVector.back()->getCenterX();
-	modelPos.y = 0.0f;
-	modelPos.z = roomVector.back()->getCenterY();
-
-	angle = 90.0f;
-
-	rotation = (float)angle * 0.0174532925f;
-
-	// Setup the rotation the billboard at the origin using the world matrix.
-	D3DXMatrixRotationX(&worldMatrix, 1.5708f);
-
-	// Setup the translation matrix from the billboard model.
-	D3DXMatrixTranslation(&translateMatrix, modelPos.x, modelPos.y, modelPos.z);
-
-	// Finally combine the rotation and translation matrices to create the final world matrix for the billboard model.
-	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
-
-	// Turn on the alpha blending before rendering the text.
-	m_Direct3D->TurnOnAlphaBlending();
-	// D3DXMatrixTranslation(&worldMatrix, 8.0f, 0.0f, 8.5f);
-
-	npc->Render(m_Direct3D->GetDeviceContext());
-	textureShader->Render(m_Direct3D->GetDeviceContext(), npc->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, npc->getTexture1());
-
-	// Turn on the alpha blending before rendering the text.
-	m_Direct3D->TurnOffAlphaBlending();
-
-	D3DXMatrixRotationX(&worldMatrix, 0.0f);
 
 	// Reset the render target back to the original back buffer and not the render to texture anymore.
 	m_Direct3D->SetBackBufferRenderTarget();

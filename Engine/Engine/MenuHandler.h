@@ -19,6 +19,7 @@ public:
 	void callMainMenu(bool isVisible, bool &inventoryActive);
 	void callInventory(bool isVisible, Player &player, std::vector<Item*> &inventory);
 	void callPlayerStatus(bool isVisible, Player& player);
+	void callPlayerActions(bool isVisible, Player& player, vector<Object*>& objs, vector<Item*>& inv);
 private:
 	bool menuActive = true;
 };

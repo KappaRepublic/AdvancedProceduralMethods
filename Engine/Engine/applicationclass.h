@@ -143,6 +143,15 @@ private:
 	bool inventoryActive;
 	bool testWindow;
 
+	// Dungeon generation parameters
+	int levelWidth = 36;
+	int levelHeight = 36;
+	int noOfAttempts = 24;
+	int maxRoomWidth = 10;
+	int maxRoomHeight = 10;
+	int minRoomWidth = 3;
+	int minRoomHeight = 3;
+
 	// Menu Handler
 	MenuHandler mHandler;
 

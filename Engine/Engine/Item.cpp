@@ -18,7 +18,6 @@ Item::Item()
 		"Just a ",
 		"Undead ",
 		"Worthless ",
-		"Teacup", 
 		""
 	};
 
@@ -35,6 +34,7 @@ Item::Item()
 		"Monitor",
 		"Juice",
 		"Hat",
+		"Teacup",
 		"Boots"
 	};
 

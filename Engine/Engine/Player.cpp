@@ -14,7 +14,6 @@ Player::~Player()
 {
 }
 
-
 bool Player::initialize(ID3D11Device * device, char * modelFilename, WCHAR * textureFilename, WCHAR* statusFilename, float posX, float posY, float posZ, float rotX, float rotY, float rotZ)
 {
 	bool result;
@@ -44,6 +43,67 @@ void Player::shutDown()
 		mesh = 0;
 	}
 }
+
+void Player::interact(vector<Object*>& objs, vector<Item*>& inv)
+{
+	// Check if the player is facing any interactable objects, and perform the correct functionality for any object that is found.
+
+	// 0 is up, 1 is right, 2 is down, 3 is left
+	switch (direction) {
+	case 0:
+		for (int i = 0; i < objs.size(); i++) {
+			if (objs.at(i)->getPosition().x == (int)getPosition().x && objs.at(i)->getPosition().z == getPosition().z + 1 == true) {
+				if (objs.at(i)->getObjectType() == ObjectType::chest) {
+					// Add an item to the player's inventory
+					inv.push_back(objs.at(i)->chestOpen());
+					// Delet the opened chest from the level objects vector
+					objs.erase(objs.begin() + i);
+				}
+			}
+		}
+		break;
+	case 1:
+		for (int i = 0; i < objs.size(); i++) {
+			if (objs.at(i)->getPosition().x == (int)getPosition().x + 1 && objs.at(i)->getPosition().z == getPosition().z == true) {
+				if (objs.at(i)->getObjectType() == ObjectType::chest) {
+					// Add an item to the player's inventory
+					inv.push_back(objs.at(i)->chestOpen());
+					// Delet the opened chest from the level objects vector
+					objs.erase(objs.begin() + i);
+				}
+			}
+		}
+		break;
+	case 2:
+		for (int i = 0; i < objs.size(); i++) {
+			if (objs.at(i)->getPosition().x == (int)getPosition().x && objs.at(i)->getPosition().z == getPosition().z - 1 == true) {
+				if (objs.at(i)->getObjectType() == ObjectType::chest) {
+					// Add an item to the player's inventory
+					inv.push_back(objs.at(i)->chestOpen());
+					// Delet the opened chest from the level objects vector
+					objs.erase(objs.begin() + i);
+				}
+			}
+		}
+		break;
+	case 3:
+		for (int i = 0; i < objs.size(); i++) {
+			if (objs.at(i)->getPosition().x == (int)getPosition().x - 1 && objs.at(i)->getPosition().z == getPosition().z + 1 == true) {
+				if (objs.at(i)->getObjectType() == ObjectType::chest) {
+					// Add an item to the player's inventory
+					inv.push_back(objs.at(i)->chestOpen());
+					// Delet the opened chest from the level objects vector
+					objs.erase(objs.begin() + i);
+				}
+			}
+		}
+		break;
+	default:
+		break;
+
+	}
+}
+
 
 void Player::setPosition(float posX, float posY, float posZ)
 {

@@ -68,3 +68,17 @@ void MenuHandler::callPlayerStatus(bool isVisible, Player & player)
 
 	ImGui::End();
 }
+
+void MenuHandler::callPlayerActions(bool isVisible, Player & player, vector<Object*>& objs, vector<Item*>& inv)
+{
+	if (isVisible) {
+		ImGui::Begin("Actions", &menuActive);
+		if (ImGui::Button("Attack", ImVec2(72, 72))) {
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Interact", ImVec2(72, 72))) {
+			player.interact(objs, inv);
+		}
+		ImGui::End();
+	}
+}
