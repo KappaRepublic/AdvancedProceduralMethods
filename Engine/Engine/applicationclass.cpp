@@ -37,6 +37,7 @@ ApplicationClass::ApplicationClass()
 	inputCameraChange = false;
 	overheadCam = false;
 	inventoryActive = false;
+	equipmentActive = false;
 	testWindow = false;
 
 }
@@ -556,8 +557,13 @@ bool ApplicationClass::Frame()
 	// Call a new frame for ImGui
 	ImGui_ImplDX11_NewFrame();
 
-	mHandler.callMainMenu(true, inventoryActive);
+	mHandler.callMainMenu(true, inventoryActive, equipmentActive);
 	mHandler.callInventory(inventoryActive, *player, inventory);
+	mHandler.callEquipment(equipmentActive, *player);
+	mHandler.callPlayerActions(true, *player, levelObjects, inventory);
+	mHandler.callUpdateLog(true);
+	mHandler.callPlayerStatus(true, *player);
+
 
 	ImGui::Begin("Minimap", &testWindow, ImVec2(196, 196), ImGuiWindowFlags_NoResize);
 	ImVec2 pos = ImGui::GetCursorScreenPos();
@@ -576,13 +582,8 @@ bool ApplicationClass::Frame()
 	}
 	ImGui::End();
 
-	ImGui::Begin("Equipment", &testWindow);
-	// ImGui::Button()
-	ImGui::Image(player->getMesh()->getTexture2(), ImVec2(256, 397));
-	ImGui::End();
-
-	mHandler.callPlayerStatus(true, *player);
-	mHandler.callPlayerActions(true, *player, levelObjects, inventory);
+	
+	
 
 	ImGui::Begin("Generate Dungeon", &testWindow);
 	if (ImGui::TreeNode("Basic Level Generation"))

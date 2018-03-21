@@ -81,7 +81,6 @@ public:
 
 	// Level structure
 	bool levelMap[LEVEL_WIDTH][LEVEL_HEIGHT];
-	std::vector<int> anArrayOfBools;
 	std::list<Room*> roomVector;
 	std::vector<Item*> inventory;
 	std::vector<Object*> levelObjects;
@@ -140,6 +139,9 @@ private:
 	bool inputCameraChange;
 	bool overheadCam;
 	bool my_tool_active;
+
+	// Menu stuff
+	bool equipmentActive;
 	bool inventoryActive;
 	bool testWindow;
 

@@ -44,7 +44,7 @@ void Player::shutDown()
 	}
 }
 
-void Player::interact(vector<Object*>& objs, vector<Item*>& inv)
+const char* Player::interact(vector<Object*>& objs, vector<Item*>& inv)
 {
 	// Check if the player is facing any interactable objects, and perform the correct functionality for any object that is found.
 
@@ -58,6 +58,8 @@ void Player::interact(vector<Object*>& objs, vector<Item*>& inv)
 					inv.push_back(objs.at(i)->chestOpen());
 					// Delet the opened chest from the level objects vector
 					objs.erase(objs.begin() + i);
+
+					return inv.back()->obtainedMessage.c_str();
 				}
 			}
 		}
@@ -70,6 +72,8 @@ void Player::interact(vector<Object*>& objs, vector<Item*>& inv)
 					inv.push_back(objs.at(i)->chestOpen());
 					// Delet the opened chest from the level objects vector
 					objs.erase(objs.begin() + i);
+
+					return inv.back()->obtainedMessage.c_str();
 				}
 			}
 		}
@@ -82,26 +86,31 @@ void Player::interact(vector<Object*>& objs, vector<Item*>& inv)
 					inv.push_back(objs.at(i)->chestOpen());
 					// Delet the opened chest from the level objects vector
 					objs.erase(objs.begin() + i);
+
+					return inv.back()->obtainedMessage.c_str();
 				}
 			}
 		}
 		break;
 	case 3:
 		for (int i = 0; i < objs.size(); i++) {
-			if (objs.at(i)->getPosition().x == (int)getPosition().x - 1 && objs.at(i)->getPosition().z == getPosition().z + 1 == true) {
+			if (objs.at(i)->getPosition().x == (int)getPosition().x - 1 && objs.at(i)->getPosition().z == getPosition().z == true) {
 				if (objs.at(i)->getObjectType() == ObjectType::chest) {
 					// Add an item to the player's inventory
 					inv.push_back(objs.at(i)->chestOpen());
 					// Delet the opened chest from the level objects vector
 					objs.erase(objs.begin() + i);
+
+					return inv.back()->obtainedMessage.c_str();
 				}
 			}
 		}
 		break;
 	default:
 		break;
-
 	}
+
+	return "There's nothing here...";
 }
 
 

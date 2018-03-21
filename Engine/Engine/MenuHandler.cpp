@@ -13,7 +13,7 @@ MenuHandler::~MenuHandler()
 {
 }
 
-void MenuHandler::callMainMenu(bool isVisible, bool &inventoryActive)
+void MenuHandler::callMainMenu(bool isVisible, bool &inventoryActive, bool &equipmentActive)
 {
 	if (isVisible) {
 		// Menu System
@@ -22,7 +22,9 @@ void MenuHandler::callMainMenu(bool isVisible, bool &inventoryActive)
 			inventoryActive = !inventoryActive;
 		}
 		ImGui::SameLine();
-		ImGui::Button("Equipment", ImVec2(72, 72));
+		if (ImGui::Button("Equipment", ImVec2(72, 72))) {
+			equipmentActive = !equipmentActive;
+		}
 		ImGui::SameLine(); // :)
 		if (ImGui::Button("Quit Game", ImVec2(72, 72))) {
 			exit(-1);
@@ -54,6 +56,16 @@ void MenuHandler::callInventory(bool isVisible, Player &player, std::vector<Item
 	}
 }
 
+void MenuHandler::callEquipment(bool isVisible, Player &player)
+{
+	if (isVisible) {
+		ImGui::Begin("Equipment", &menuActive);
+		// ImGui::Button()
+		ImGui::Image(player.getMesh()->getTexture2(), ImVec2(256, 397));
+		ImGui::End();
+	}
+}
+
 void MenuHandler::callPlayerStatus(bool isVisible, Player & player)
 {
 	if (isVisible) {
@@ -77,8 +89,33 @@ void MenuHandler::callPlayerActions(bool isVisible, Player & player, vector<Obje
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Interact", ImVec2(72, 72))) {
-			player.interact(objs, inv);
+			updateLogAddUpdate(player.interact(objs, inv));	
 		}
 		ImGui::End();
 	}
+}
+
+void MenuHandler::updateLogAddUpdate(const char * text)
+{
+	logWindowContents.push_back(text);
+}
+
+void MenuHandler::callUpdateLog(bool isVisible)
+{
+	if (isVisible) {
+		ImGui::Begin("Log", &menuActive);
+		
+		for (auto const& i : logWindowContents) {
+			ImGui::Text(i);
+		}
+		if (ImGui::Button("Clear Log")) {
+			clearUpdateLog();
+		}
+		ImGui::End();
+	}
+}
+
+void MenuHandler::clearUpdateLog()
+{
+	logWindowContents.clear();
 }

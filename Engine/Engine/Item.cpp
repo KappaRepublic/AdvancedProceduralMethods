@@ -67,5 +67,15 @@ void Item::initialize()
 	itemName = objects.at(rand() % objects.size());
 	itemSuffix = suffixes.at(rand() % suffixes.size());
 
+	/*
+	char buf[100];
+	strcpy(buf, itemPrefix);
+	strcat(buf, itemName);
+	strcat(buf, itemPrefix);
+	*/
+
+	fullItemName = (std::string)itemPrefix + (std::string)itemName + (std::string)itemSuffix;
+	obtainedMessage = "Obtained a " + fullItemName;
+
 	power = rand() % 100;
 }
