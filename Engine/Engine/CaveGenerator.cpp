@@ -22,12 +22,12 @@ CaveGenerator::CaveGenerator()
 	breakOut = 100000;
 
 	// Fill in map
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < 105; i++) {
 		map.push_back(std::vector<int>());
 	}
 
-	for (int i = 0; i < 100; i++) {
-		for (int j = 0; j < 100; j++) {
+	for (int i = 0; i < 105; i++) {
+		for (int j = 0; j < 105; j++) {
 			map[i].push_back(0);
 		}
 	}
@@ -55,6 +55,10 @@ int CaveGenerator::build()
 {
 	buildCaves();
 	getCaves();
+
+	
+
+	std::vector<std::vector<int> > test = map;
 
 	return caves.size();
 }
@@ -182,7 +186,7 @@ void CaveGenerator::buildCaves()
 
 		for (Point &p : neighboursGet1(cell)) {
 			if (pointGet(p) == 1) {
-				cellCount = 1;
+				cellCount += 1;
 			}
 		}
 
@@ -201,9 +205,17 @@ void CaveGenerator::buildCaves()
 		// Examine each cell individually
 		for (int x = 0; x < mapSize.x; x++) {
 			for (int y = 0; y < mapSize.y; y++) {
-				cell = Point(x, y);
+				cell = Point(x + 1, y + 1);
 
-				if (pointGet(cell) > 0 && std::count(neighboursGet(cell).begin(), neighboursGet(cell).end(), 0) >= emptyNeighbours) {
+				int cellCount = 0;
+
+				for (Point &p : neighboursGet(cell)) {
+					if (pointGet(p) == 0) {
+						cellCount += 1;
+					}
+				}
+
+				if (pointGet(cell) > 0 && cellCount >= emptyNeighbours) {
 					pointSet(cell, 0);
 				}
 			}
@@ -213,9 +225,17 @@ void CaveGenerator::buildCaves()
 	// Fill in any empty cells that have 4 full neighbours
 	for (int x = 0; x < mapSize.x; x++) {
 		for (int y = 0; y < mapSize.y; y++) {
-			cell = Point(x, y);
+			cell = Point(x + 1, y + 1);
 
-			if (pointGet(cell) == 0 && std::count(neighboursGet(cell).begin(), neighboursGet(cell).end(), 1) >= emptyCellNeighbours) {
+			int cellCount = 0;
+
+			for (Point &p : neighboursGet(cell)) {
+				if (pointGet(p) == 1) {
+					cellCount += 1;
+				}
+			}
+
+			if (pointGet(cell) == 0 && cellCount >= emptyCellNeighbours) {
 				pointSet(cell, 1);
 			}
 		}
@@ -260,7 +280,7 @@ void CaveGenerator::getCaves()
 			// Check if the cell doesn't occur within the list of caves
 			// for ()
 
-			int testInt;
+			int testInt = 0;
 			for (std::deque<Point> &pList : caves) {
 				for (Point &p : pList) {
 					if (cell == p) {
@@ -418,7 +438,13 @@ std::list<Point> CaveGenerator::neighboursGet(Point p)
 	std::list<Point> tempList;
 
 	for (Point const& i : directions) {
-		tempList.push_back(p + i);
+		if (i.xCoord == -1 || i.yCoord == -1) {
+
+		}
+		else {
+			tempList.push_back(p + i);
+		}
+		
 	}
 
 	return tempList;
@@ -429,7 +455,12 @@ std::list<Point> CaveGenerator::neighboursGet1(Point p)
 	std::list<Point> tempList;
 
 	for (Point const& i : directions1) {
-		tempList.push_back(p + i);
+		if (i.xCoord == -1 || i.yCoord == -1) {
+
+		}
+		else {
+			tempList.push_back(p + i);
+		}
 	}
 
 	return tempList;

@@ -13,8 +13,8 @@ const bool VSYNC_ENABLED = true;
 const float SCREEN_DEPTH = 1000.0f;
 const float SCREEN_NEAR = 0.1f;
 
-#define LEVEL_WIDTH 36
-#define LEVEL_HEIGHT 36
+#define LEVEL_WIDTH 25
+#define LEVEL_HEIGHT 25
 
 #define NUM_OF_ROOMS 24
 
@@ -52,6 +52,7 @@ const float SCREEN_NEAR = 0.1f;
 #include "Object.h"
 
 #include "CaveGenerator.h"
+#include "Automata.h"
 
 #include <list>
 #include <time.h>
@@ -65,7 +66,11 @@ const float SCREEN_NEAR = 0.1f;
 #include "MenuHandler.h"
 
 
-
+struct sortStruct {
+	inline bool operator() (const Object* obj1, const Object* obj2) {
+		return (obj2->distanceFromPlayer < obj1->distanceFromPlayer);
+	}
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: ApplicationClass
@@ -88,6 +93,8 @@ public:
 	std::vector<Object*> levelObjects;
 
 	void generateRooms();
+	void generateCave();
+	void generateTrees();
 	void adjustLevel();
 	void createHCorridor(int x1, int x2, int y);
 	void createVCorridor(int y1, int y2, int x);
@@ -96,9 +103,11 @@ public:
 	LevelCell levelLayout[LEVEL_WIDTH][LEVEL_HEIGHT];
 
 	CaveGenerator caveGen;
+	Automata autoGen;
+
+	int treeChance = 9;
 
 	// ImGuiIO& io;
-
 
 private:
 	bool RenderToTexture();

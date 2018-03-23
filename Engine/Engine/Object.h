@@ -6,7 +6,8 @@
 enum ObjectType {
 	stairs = 0,
 	npc = 1,
-	chest = 2
+	chest = 2,
+	trees = 3,
 };
 
 
@@ -18,6 +19,8 @@ public:
 
 	bool init(ObjectType type, ID3D11Device* device, char* modelFilename, WCHAR* textureFilename, WCHAR* iconTextureFilename, float posX, float posY, float posZ, float rotX, float rotY, float rotZ);
 	void shutDown();
+
+	float distanceFromPlayer;
 
 	Item* chestOpen();
 

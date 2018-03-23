@@ -159,6 +159,9 @@
     <ClCompile Include="intVec2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Automata.cpp">
+      <Filter>Source Files\Generators</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h">
@@ -277,6 +280,9 @@
     </ClInclude>
     <ClInclude Include="intVec2.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Automata.h">
+      <Filter>Header Files\Generators</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

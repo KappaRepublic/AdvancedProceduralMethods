@@ -259,7 +259,7 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// Set up the description of the stencil state.
 	depthStencilDesc.DepthEnable = true;
 	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 
 	depthStencilDesc.StencilEnable = true;
 	depthStencilDesc.StencilReadMask = 0xFF;

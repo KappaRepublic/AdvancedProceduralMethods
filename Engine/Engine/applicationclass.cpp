@@ -63,7 +63,10 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 
 	srand(time(NULL));
 
-	caveGen.build();
+	// caveGen.build();
+	// caveGen.connectCaves();
+
+	
 
 	/*
 	Object* tempObject = new Object();
@@ -329,7 +332,8 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 	// Generate procedural dungeon
-	generateRooms();
+	// generateRooms();
+	generateCave();
 
 	// Give the player some random items for funsies
 	for (int i = 0; i < 3; i++) {
@@ -784,6 +788,54 @@ void ApplicationClass::generateRooms()
 	// clearUnusedCells();
 }
 
+void ApplicationClass::generateCave()
+{
+	levelObjects.clear();
+	roomVector.clear();
+
+	autoGen.generateMap();
+
+	for (int x = 0; x < autoGen.width; x++) {
+		for (int y = 0; y < autoGen.height; y++) {
+			if (autoGen.getMap()[x][y] == 1) {
+				levelLayout[x][y].initialize(m_Direct3D->GetDevice(), "../Engine/data/floorOutside.txt", L"../Engine/data/water.jpg", L"../Engine/data/minimapWall.png");
+				levelLayout[x][y].wall = true;
+			}
+			else {
+				levelLayout[x][y].initialize(m_Direct3D->GetDevice(), "../Engine/data/floorOutside.txt", L"../Engine/data/grass.jpg", L"../Engine/data/minimapFloor.png");
+				levelLayout[x][y].wall = false;
+			}
+
+
+			// levelLayout[x][y].wall = autoGen.getMap()[x][y];
+
+		}
+	}
+
+	generateTrees();
+}
+
+void ApplicationClass::generateTrees() {
+	for (int x = 0; x < autoGen.width; x++) {
+		for (int y = 0; y < autoGen.height; y++) {
+
+			if (autoGen.getMap()[x][y] == 0) {
+				if ((rand() % 100 + 1) < treeChance) {
+
+					Object* tempObject = new Object();
+
+
+					tempObject->init(ObjectType::chest, m_Direct3D->GetDevice(), "../Engine/data/player.txt", L"../Engine/data/tree.png", L"../Engine/data/tree.png",
+					x, 0, y, 0.0f, 0.0f, 0.0f);
+
+					levelObjects.push_back(tempObject);
+				}
+			}
+
+		}
+	}
+}
+
 void ApplicationClass::adjustLevel()
 {
 	for (Room* const& i : roomVector) {
@@ -1028,8 +1080,16 @@ bool ApplicationClass::RenderGraphics()
 			D3DXMatrixTranslation(&worldMatrix, (float)i, 0.0f, (float)j);
 
 			levelLayout[i][j].getMesh()->Render(m_Direct3D->GetDeviceContext());
-			fogShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-				levelLayout[i][j].getMesh()->getTexture1(), fogStart, fogEnd);
+
+			if (overheadCam) {
+				textureShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+					levelLayout[i][j].getMesh()->getTexture1());
+			}
+			else {
+				
+				fogShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+					levelLayout[i][j].getMesh()->getTexture1(), fogStart, fogEnd);
+			}
 			/*
 			pLightShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
 				levelLayout[i][j].getMesh()->getTexture1(), &m_Light->GetDiffuseColor(), &m_Light->GetPosition());
@@ -1328,13 +1388,30 @@ bool ApplicationClass::RenderToTexture()
 
 	// m_Direct3D->TurnOffAlphaBlending();
 
+
 	if (!result) {
 		return false;
 	}
 
+	// Do some sorting
+	// std::vector<Object*> tempList;
+
+	if (levelObjects.size() > 0) {
+		for (Object* o : levelObjects) {
+			o->distanceFromPlayer = sqrt((float)pow((o->getPosition().x - player->getPosition().x), 2) + pow((o->getPosition().y - player->getPosition().y), 2));
+		}
+	}
+
+	std::sort(levelObjects.begin(), levelObjects.end(), sortStruct());
+
+
 	if (levelObjects.size() > 0)
 	{
 		for (int i = 0; i < levelObjects.size(); i++) {
+
+
+
+
 			modelPos.x = levelObjects.at(i)->getPosition().x;
 			modelPos.y = -0.5f;
 			modelPos.z = levelObjects.at(i)->getPosition().z;
