@@ -63,6 +63,8 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 
 	srand(time(NULL));
 
+	caveGen.build();
+
 	/*
 	Object* tempObject = new Object();
 	tempObject->init(ObjectType::chest, m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/chestTexture.png", NULL,
@@ -581,9 +583,6 @@ bool ApplicationClass::Frame()
 		ImGui::EndTooltip();
 	}
 	ImGui::End();
-
-	
-	
 
 	ImGui::Begin("Generate Dungeon", &testWindow);
 	if (ImGui::TreeNode("Basic Level Generation"))

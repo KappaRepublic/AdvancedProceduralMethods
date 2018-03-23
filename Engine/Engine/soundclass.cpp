@@ -32,7 +32,7 @@ bool SoundClass::Initialize(HWND hwnd)
 	}
 
 	// Load a wave audio file onto a secondary buffer.
-	result = LoadWaveFile("../Engine/data/findyourway.wav", &m_secondaryBuffer1);
+	result = LoadWaveFile("../Engine/data/Moon-ruins.wav", &m_secondaryBuffer1);
 	if (!result)
 	{
 		return false;

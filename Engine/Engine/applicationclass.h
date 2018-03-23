@@ -51,6 +51,8 @@ const float SCREEN_NEAR = 0.1f;
 #include "Debugwindowclass.h"
 #include "Object.h"
 
+#include "CaveGenerator.h"
+
 #include <list>
 #include <time.h>
 #include <algorithm>
@@ -92,6 +94,8 @@ public:
 	void clearUnusedCells();
 
 	LevelCell levelLayout[LEVEL_WIDTH][LEVEL_HEIGHT];
+
+	CaveGenerator caveGen;
 
 	// ImGuiIO& io;
 

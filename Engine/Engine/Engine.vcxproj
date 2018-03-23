@@ -83,6 +83,7 @@
   <ItemGroup>
     <ClCompile Include="applicationclass.cpp" />
     <ClCompile Include="cameraclass.cpp" />
+    <ClCompile Include="CaveGenerator.cpp" />
     <ClCompile Include="cpuclass.cpp" />
     <ClCompile Include="d3dclass.cpp" />
     <ClCompile Include="Debugwindowclass.cpp" />
@@ -95,6 +96,7 @@
     <ClCompile Include="imgui_draw.cpp" />
     <ClCompile Include="imgui_impl_dx11.cpp" />
     <ClCompile Include="inputclass.cpp" />
+    <ClCompile Include="intVec2.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="LevelCell.cpp" />
     <ClCompile Include="lightclass.cpp" />
@@ -105,6 +107,7 @@
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="perlinnoise.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Point.cpp" />
     <ClCompile Include="PointLightShaderClass.cpp" />
     <ClCompile Include="positionclass.cpp" />
     <ClCompile Include="Rendertextureclass.cpp" />
@@ -123,6 +126,7 @@
   <ItemGroup>
     <ClInclude Include="applicationclass.h" />
     <ClInclude Include="cameraclass.h" />
+    <ClInclude Include="CaveGenerator.h" />
     <ClInclude Include="cpuclass.h" />
     <ClInclude Include="d3dclass.h" />
     <ClInclude Include="Debugwindowclass.h" />
@@ -135,6 +139,7 @@
     <ClInclude Include="imgui_impl_dx11.h" />
     <ClInclude Include="imgui_internal.h" />
     <ClInclude Include="inputclass.h" />
+    <ClInclude Include="intVec2.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="LevelCell.h" />
     <ClInclude Include="lightclass.h" />
@@ -143,6 +148,7 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="perlinnoise.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Point.h" />
     <ClInclude Include="PointLightShaderClass.h" />
     <ClInclude Include="positionclass.h" />
     <ClInclude Include="Rendertextureclass.h" />

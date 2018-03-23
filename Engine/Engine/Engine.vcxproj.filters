@@ -28,6 +28,12 @@
     <Filter Include="IMGUI">
       <UniqueIdentifier>{b1763a08-a199-4122-a0fc-4b547a51afda}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Generators">
+      <UniqueIdentifier>{fe567766-e68a-452b-8aa6-45be595e5d0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Generators">
+      <UniqueIdentifier>{560380af-bdb7-4028-b234-34e5c15647b6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="applicationclass.cpp">
@@ -144,6 +150,15 @@
     <ClCompile Include="Fogshaderclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CaveGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Point.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="intVec2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h">
@@ -252,6 +267,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Fogshaderclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CaveGenerator.h">
+      <Filter>Header Files\Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="Point.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="intVec2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
