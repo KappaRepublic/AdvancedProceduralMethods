@@ -36,8 +36,18 @@ bool SystemClass::Initialize()
 	// Initialize the windows api.
 	InitializeWindows(screenWidth, screenHeight);
 
+	mSound = new SoundClass;
+	if (!mSound) {
+		return false;
+	}
+
+	result = mSound->Initialize(m_hwnd);
+	if (!result) {
+		return false;
+	}
+
 	// Create the application wrapper object.
-	m_Application = new ApplicationClass;
+	m_Application = new ApplicationClass(mSound);
 	if(!m_Application)
 	{
 		return false;
@@ -51,15 +61,7 @@ bool SystemClass::Initialize()
 	}
 
 
-	mSound = new SoundClass;
-	if (!mSound) {
-		return false;
-	}
-
-	result = mSound->Initialize(m_hwnd);
-	if (!result) {
-		return false;
-	}
+	
 
 
 

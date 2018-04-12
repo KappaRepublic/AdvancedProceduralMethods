@@ -162,6 +162,12 @@
     <ClCompile Include="Automata.cpp">
       <Filter>Source Files\Generators</Filter>
     </ClCompile>
+    <ClCompile Include="GenRoom.cpp">
+      <Filter>Source Files\Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="Dungeon.cpp">
+      <Filter>Source Files\Generators</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h">
@@ -283,6 +289,18 @@
     </ClInclude>
     <ClInclude Include="Automata.h">
       <Filter>Header Files\Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="GenRoom.h">
+      <Filter>Header Files\Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="Coord.h">
+      <Filter>Header Files\Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="Dungeon.h">
+      <Filter>Header Files\Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="Airship.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

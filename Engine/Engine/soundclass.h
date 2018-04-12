@@ -49,16 +49,20 @@ public:
 	SoundClass(const SoundClass&);
 	~SoundClass();
 	bool Initialize(HWND);
+	void loadNew(char* file);
 	void Shutdown();
+	bool PlayWaveFile();
+	void StopWaveFile();
+	void ShutdownWaveFile(IDirectSoundBuffer8**);
 
 private:
 	bool InitializeDirectSound(HWND);
 	void ShutdownDirectSound();
 
 	bool LoadWaveFile(char*, IDirectSoundBuffer8**);
-	void ShutdownWaveFile(IDirectSoundBuffer8**);
+	
 
-	bool PlayWaveFile();
+	// bool PlayWaveFile();
 
 private:
 	IDirectSound8* m_DirectSound;

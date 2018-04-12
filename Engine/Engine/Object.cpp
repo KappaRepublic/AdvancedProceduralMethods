@@ -25,6 +25,17 @@ bool Object::init(ObjectType type, ID3D11Device * device, char * modelFilename, 
 	return false;
 }
 
+bool Object::init(ObjectType type, ID3D11Device* device, ModelClass* model, float posX, float posY, float posZ, float rotX, float rotY, float rotZ) {
+	mesh = model;
+
+	position = D3DXVECTOR3(posX, posY, posZ);
+	rotation = D3DXVECTOR3(rotX, rotY, rotZ);
+
+	objectType = type;
+
+	return false;
+}
+
 void Object::shutDown()
 {
 	if (mesh) {

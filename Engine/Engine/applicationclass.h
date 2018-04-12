@@ -13,8 +13,8 @@ const bool VSYNC_ENABLED = true;
 const float SCREEN_DEPTH = 1000.0f;
 const float SCREEN_NEAR = 0.1f;
 
-#define LEVEL_WIDTH 25
-#define LEVEL_HEIGHT 25
+#define LEVEL_WIDTH 100
+#define LEVEL_HEIGHT 100
 
 #define NUM_OF_ROOMS 24
 
@@ -31,6 +31,7 @@ const float SCREEN_NEAR = 0.1f;
 #include "cpuclass.h"
 #include "fontshaderclass.h"
 #include "textclass.h"
+#include "soundclass.h"
 
 #include "terrainshaderclass.h"
 #include "lightshaderclass.h"
@@ -51,8 +52,11 @@ const float SCREEN_NEAR = 0.1f;
 #include "Debugwindowclass.h"
 #include "Object.h"
 
+#include "Airship.h"
+
 #include "CaveGenerator.h"
 #include "Automata.h"
+#include "Dungeon.h"
 
 #include <list>
 #include <time.h>
@@ -78,7 +82,7 @@ struct sortStruct {
 class ApplicationClass
 {
 public:
-	ApplicationClass();
+	ApplicationClass(SoundClass* sound);
 	ApplicationClass(const ApplicationClass&);
 	~ApplicationClass();
 
@@ -100,10 +104,23 @@ public:
 	void createVCorridor(int y1, int y2, int x);
 	void clearUnusedCells();
 
+	void generateDungeon();
+	void processMap();
+	bool checkValidEntrance(int x, int y);
+	bool checkIfBeach(int x, int y);
+
 	LevelCell levelLayout[LEVEL_WIDTH][LEVEL_HEIGHT];
+	
+	SoundClass* sound;
+
+	bool outsideMusic;
+	bool insideMusic;
 
 	CaveGenerator caveGen;
 	Automata autoGen;
+	Dungeon dungeon;
+
+	Airship airship;
 
 	int treeChance = 9;
 
@@ -145,6 +162,16 @@ private:
 
 	RenderTextureClass* m_RenderTexture;
 	DebugWindowClass* m_DebugWindow;
+
+	// Pre-Made Tiles
+	ModelClass* grassTile;
+	ModelClass* waterTile;
+	ModelClass* dungeonWallTile;
+	ModelClass* dungeonFloorTile;
+	ModelClass* beachTile;
+
+	ModelClass* treeModel;
+
 
 	IDirectInputDevice8* m_mouse;
 

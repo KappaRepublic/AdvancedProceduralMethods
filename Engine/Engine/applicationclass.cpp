@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "applicationclass.h"
 
-ApplicationClass::ApplicationClass()
+ApplicationClass::ApplicationClass(SoundClass* s)
 {
 	m_Input = 0;
 	m_Direct3D = 0;
@@ -39,6 +39,19 @@ ApplicationClass::ApplicationClass()
 	inventoryActive = false;
 	equipmentActive = false;
 	testWindow = false;
+
+	grassTile = 0;
+	waterTile = 0;
+	dungeonWallTile = 0;
+	dungeonFloorTile = 0;
+	beachTile = 0;
+
+	treeModel = 0;
+
+	sound = s;
+
+	outsideMusic = true;
+	insideMusic = false;
 
 }
 
@@ -331,9 +344,44 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		}
 	}
 
+	// Create pre made tiles
+	grassTile = new ModelClass;
+	grassTile->Initialize(m_Direct3D->GetDevice(), "../Engine/data/floorOutside.txt", L"../Engine/data/grass.jpg", L"../Engine/data/minimapGrass.png", NULL);
+
+	waterTile = new ModelClass;
+	waterTile->Initialize(m_Direct3D->GetDevice(), "../Engine/data/floorOutside.txt", L"../Engine/data/water.jpg", L"../Engine/data/minimapWall.png", NULL);
+
+	dungeonWallTile = new ModelClass;
+	dungeonWallTile->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/fortressWall.jpg", L"../Engine/data/minimapWall.png", NULL);
+
+	dungeonFloorTile = new ModelClass;
+	dungeonFloorTile->Initialize(m_Direct3D->GetDevice(), "../Engine/data/floor.txt", L"../Engine/data/stoneFloor.jpg", L"../Engine/data/minimapFloor.png", NULL);
+
+	beachTile = new ModelClass;
+	beachTile->Initialize(m_Direct3D->GetDevice(), "../Engine/data/floorOutside.txt", L"../Engine/data/beach.jpg", L"../Engine/data/minimapGrass.png", NULL);
+
+	treeModel = new ModelClass;
+	treeModel->Initialize(m_Direct3D->GetDevice(), "../Engine/data/player.txt", L"../Engine/data/tree.png", L"../Engine/data/tree.png", NULL);
+
+	// Fill in map with blank space
+	for (int x = 0; x < LEVEL_WIDTH; x++) {
+		for (int y = 0; y < LEVEL_HEIGHT; y++) {
+			levelLayout[x][y].initialize(m_Direct3D->GetDevice(), waterTile, LevelCell::CellType::water);
+			levelLayout[x][y].wall = true;
+		}
+	}
+
+	airship.init(ObjectType::tree, m_Direct3D->GetDevice(), "../Engine/data/airship.txt", L"../Engine/data/3f6e8e00.png", L"../Engine/data/airship.png",
+		7.0f, 0, 6.0f, 0.0f, 0.0f, 0.0f);
+
 	// Generate procedural dungeon
 	// generateRooms();
 	generateCave();
+	generateDungeon();
+	processMap();
+	generateTrees();
+	
+
 
 	// Give the player some random items for funsies
 	for (int i = 0; i < 3; i++) {
@@ -547,6 +595,42 @@ void ApplicationClass::Shutdown()
 		m_Input = 0;
 	}
 
+	if (grassTile) {
+		grassTile->Shutdown();
+		delete grassTile;
+		grassTile = 0;
+	}
+
+	if (waterTile) {
+		waterTile->Shutdown();
+		delete waterTile;
+		waterTile = 0;
+	}
+
+	if (dungeonWallTile) {
+		dungeonWallTile->Shutdown();
+		delete dungeonWallTile;
+		dungeonWallTile = 0;
+	}
+
+	if (dungeonFloorTile) {
+		dungeonFloorTile->Shutdown();
+		delete dungeonFloorTile;
+		dungeonFloorTile = 0;
+	}
+
+	if (beachTile) {
+		beachTile->Shutdown();
+		delete beachTile;
+		beachTile = 0;
+	}
+
+	if (treeModel) {
+		treeModel->Shutdown();
+		delete treeModel;
+		treeModel = 0;
+	}
+
 	// Clear lists and vectors
 	levelObjects.clear();
 	roomVector.clear();
@@ -656,6 +740,35 @@ bool ApplicationClass::Frame()
 		m_Text->updateTextWithItem(1, *inventory.at(player->equippedWeapon), m_Direct3D->GetDeviceContext());
 	}
 	// m_Text->updateTextWithItem(2, *inventory.at(1), m_Direct3D->GetDeviceContext());
+
+	// Music?
+	if (!insideMusic) {
+		if (levelLayout[(int)player->getPosition().x][(int)player->getPosition().z].type == LevelCell::CellType::dFloor) {
+			sound->StopWaveFile();
+
+			sound->loadNew("../Engine/data/dungeon.wav");
+
+			insideMusic = true;
+			outsideMusic = false;
+
+			sound->PlayWaveFile();
+		}
+	}
+
+	if (!outsideMusic) {
+		if (levelLayout[(int)player->getPosition().x][(int)player->getPosition().z].type != LevelCell::CellType::dFloor) {
+			sound->StopWaveFile();
+
+			sound->loadNew("../Engine/data/world.wav");
+
+			insideMusic = false;
+			outsideMusic = true;
+
+			sound->PlayWaveFile();
+		}
+	}
+
+	
 
 
 	return result;
@@ -798,11 +911,15 @@ void ApplicationClass::generateCave()
 	for (int x = 0; x < autoGen.width; x++) {
 		for (int y = 0; y < autoGen.height; y++) {
 			if (autoGen.getMap()[x][y] == 1) {
-				levelLayout[x][y].initialize(m_Direct3D->GetDevice(), "../Engine/data/floorOutside.txt", L"../Engine/data/water.jpg", L"../Engine/data/minimapWall.png");
+				levelLayout[x][y].initialize(m_Direct3D->GetDevice(), waterTile, LevelCell::CellType::water);
 				levelLayout[x][y].wall = true;
 			}
-			else {
-				levelLayout[x][y].initialize(m_Direct3D->GetDevice(), "../Engine/data/floorOutside.txt", L"../Engine/data/grass.jpg", L"../Engine/data/minimapFloor.png");
+			else if (autoGen.getMap()[x][y] == 0) {
+				levelLayout[x][y].initialize(m_Direct3D->GetDevice(), grassTile, LevelCell::CellType::grass);
+				levelLayout[x][y].wall = false;
+			}
+			else if (autoGen.getMap()[x][y] == 2) {
+				levelLayout[x][y].initialize(m_Direct3D->GetDevice(), "../Engine/data/floorOutside.txt", L"../Engine/data/woodenFloor.jpg", L"../Engine/data/minimapFloor.png");
 				levelLayout[x][y].wall = false;
 			}
 
@@ -812,26 +929,28 @@ void ApplicationClass::generateCave()
 		}
 	}
 
-	generateTrees();
+	
 }
 
 void ApplicationClass::generateTrees() {
-	for (int x = 0; x < autoGen.width; x++) {
-		for (int y = 0; y < autoGen.height; y++) {
+	for (int x = 0; x < LEVEL_WIDTH; x++) {
+		for (int y = 0; y < LEVEL_HEIGHT; y++) {
 
-			if (autoGen.getMap()[x][y] == 0) {
+			if (levelLayout[x][y].type == LevelCell::CellType::grass) {
 				if ((rand() % 100 + 1) < treeChance) {
+
 
 					Object* tempObject = new Object();
 
 
-					tempObject->init(ObjectType::chest, m_Direct3D->GetDevice(), "../Engine/data/player.txt", L"../Engine/data/tree.png", L"../Engine/data/tree.png",
-					x, 0, y, 0.0f, 0.0f, 0.0f);
+					tempObject->init(ObjectType::tree, m_Direct3D->GetDevice(), treeModel,
+						x, 0, y, 0.0f, 0.0f, 0.0f);
 
 					levelObjects.push_back(tempObject);
+
+
 				}
 			}
-
 		}
 	}
 }
@@ -875,6 +994,113 @@ void ApplicationClass::clearUnusedCells() {
 			}
 		}
 	}
+}
+
+void ApplicationClass::generateDungeon()
+{
+	dungeon.generateDungeon();
+
+	for (int x = 0; x < dungeon.width + dungeon.widthAdjust; x++) {
+		for (int y = 0; y < dungeon.height + dungeon.heightAdjust; y++) {
+			if (dungeon.map[x][y] == 1) {
+				levelLayout[x][y].initialize(m_Direct3D->GetDevice(), dungeonWallTile, LevelCell::CellType::dWall);
+				levelLayout[x][y].wall = true;
+			}
+			else if (dungeon.map[x][y] == 0) {
+				levelLayout[x][y].initialize(m_Direct3D->GetDevice(), dungeonFloorTile, LevelCell::CellType::dFloor);
+				levelLayout[x][y].wall = false;
+			}
+		}
+	}
+
+}
+
+void ApplicationClass::processMap()
+{
+	int entrancesToMake = 3;
+	int entrancesMade = 0;
+
+	do {
+		// Create a suitable entrance to the dungeon
+		for (int x = 0; x < LEVEL_WIDTH; x++) {
+			for (int y = 0; y < LEVEL_HEIGHT; y++) {
+				if (levelLayout[x][y].type == LevelCell::CellType::dWall) {
+					if (checkValidEntrance(x, y)) {
+						// Place entrance based on a random chance
+						int randChance = rand() % 100;
+						if (randChance == 0) {
+							// Create an entry point to the dungeon
+							levelLayout[x][y].initialize(m_Direct3D->GetDevice(), dungeonFloorTile, LevelCell::CellType::dFloor);
+							levelLayout[x][y].wall = false;
+							// entrance is created
+							entrancesMade += 1;
+							// End checks for entrance
+							// return;
+						}
+					}
+				}
+			}
+		}
+	} while (entrancesMade < 3);
+
+	// Process beach tiles
+	for (int x = 0; x < LEVEL_WIDTH; x++) {
+		for (int y = 0; y < LEVEL_HEIGHT; y++) {
+			// Check if tile is grass
+			if (levelLayout[x][y].type == LevelCell::CellType::grass) {
+				if (checkIfBeach(x, y)) {
+					levelLayout[x][y].initialize(m_Direct3D->GetDevice(), beachTile, LevelCell::CellType::beach);
+					levelLayout[x][y].wall = false;
+				}
+			}
+		}
+	}
+}
+
+bool ApplicationClass::checkValidEntrance(int x, int y)
+{
+	bool floorFound = false;
+	bool grassFound = false;
+
+	for (int neighbourX = x - 1; neighbourX <= x + 1; neighbourX++) {
+		for (int neighbourY = y - 1; neighbourY <= y + 1; neighbourY++) {
+			// Don't check cells outside of range
+			if (neighbourX < 0 || neighbourX > LEVEL_WIDTH || neighbourY < 0 || neighbourY > LEVEL_HEIGHT) {
+				// Continue to next cell to be checked
+				continue;
+			}
+			else {
+				if (neighbourX != x || neighbourY != y) {
+					if (levelLayout[neighbourX][neighbourY].type == LevelCell::CellType::grass) {
+						grassFound = true;
+					}
+					else if (levelLayout[neighbourX][neighbourY].type == LevelCell::CellType::dFloor) {
+						floorFound = true;
+					}
+				}
+			}
+		}
+	}
+
+	return grassFound && floorFound;
+}
+
+bool ApplicationClass::checkIfBeach(int x, int y)
+{
+	for (int neighbourX = x - 1; neighbourX <= x + 1; neighbourX++) {
+		for (int neighbourY = y - 1; neighbourY <= y + 1; neighbourY++) {
+			if (neighbourX < 0 || neighbourX > LEVEL_WIDTH || neighbourY < 0 || neighbourY > LEVEL_HEIGHT) {
+				// Continue to next cell to be checked
+				continue;
+			}
+			else {
+				if (levelLayout[neighbourX][neighbourY].type == LevelCell::CellType::water) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 bool ApplicationClass::HandleInput(float frameTime)
@@ -1086,9 +1312,20 @@ bool ApplicationClass::RenderGraphics()
 					levelLayout[i][j].getMesh()->getTexture1());
 			}
 			else {
+
+				// int plX = player->
+
+				if (levelLayout[(int)player->getPosition().x][(int)player->getPosition().z].type == LevelCell::CellType::dFloor) {
+					fogShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+						levelLayout[i][j].getMesh()->getTexture1(), fogStart, fogEnd);
+				}
+				else {
+					textureShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+						levelLayout[i][j].getMesh()->getTexture1());
+				}
+
+
 				
-				fogShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-					levelLayout[i][j].getMesh()->getTexture1(), fogStart, fogEnd);
 			}
 			/*
 			pLightShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
@@ -1143,11 +1380,38 @@ bool ApplicationClass::RenderGraphics()
 			D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
 
 			levelObjects.at(i)->getMesh()->Render(m_Direct3D->GetDeviceContext());
-			fogShader->Render(m_Direct3D->GetDeviceContext(), levelObjects.at(i)->getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, levelObjects.at(i)->getMesh()->getTexture1(), fogStart, fogEnd);
+			if (levelLayout[(int)player->getPosition().x][(int)player->getPosition().z].type == LevelCell::CellType::dFloor) {
+				fogShader->Render(m_Direct3D->GetDeviceContext(), levelObjects.at(i)->getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, levelObjects.at(i)->getMesh()->getTexture1(), fogStart, fogEnd);
 
+			}
+			else {
+				textureShader->Render(m_Direct3D->GetDeviceContext(), levelObjects.at(i)->getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, levelObjects.at(i)->getMesh()->getTexture1());
+
+			}
+			
 		}
 	}
 	
+	modelPos.x = airship.getPosition().x;
+	modelPos.y = 0.0f;
+	modelPos.z = airship.getPosition().z;
+
+	angle = atan2(modelPos.x - cameraPos.x, modelPos.z - cameraPos.z) * (180.0 / D3DX_PI);
+
+	rotation = (float)angle * 0.0174532925f;
+
+	// Setup the rotation the billboard at the origin using the world matrix.
+	D3DXMatrixRotationY(&worldMatrix, rotation);
+
+	// Setup the translation matrix from the billboard model.
+	D3DXMatrixTranslation(&translateMatrix, modelPos.x, modelPos.y, modelPos.z);
+
+	// Finally combine the rotation and translation matrices to create the final world matrix for the billboard model.
+	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
+
+
+	textureShader->Render(m_Direct3D->GetDeviceContext(), airship.getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, airship.getMesh()->getTexture1());
+
 
 	/*
 	m_Direct3D->TurnOffAlphaBlending();

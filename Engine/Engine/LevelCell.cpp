@@ -30,6 +30,15 @@ bool LevelCell::initialize(ID3D11Device * device, char * modelFilename, WCHAR * 
 	return true;
 }
 
+bool LevelCell::initialize(ID3D11Device* device, ModelClass* model, CellType t) {
+	bool result;
+
+	cellMesh = model;
+	type = t;
+
+	return true;
+}
+
 void LevelCell::shutDown()
 {
 	if (cellMesh) {

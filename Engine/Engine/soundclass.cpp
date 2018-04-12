@@ -32,7 +32,7 @@ bool SoundClass::Initialize(HWND hwnd)
 	}
 
 	// Load a wave audio file onto a secondary buffer.
-	result = LoadWaveFile("../Engine/data/Moon-ruins.wav", &m_secondaryBuffer1);
+	result = LoadWaveFile("../Engine/data/world.wav", &m_secondaryBuffer1);
 	if (!result)
 	{
 		return false;
@@ -48,6 +48,13 @@ bool SoundClass::Initialize(HWND hwnd)
 
 	return true;
 	
+}
+
+void SoundClass::loadNew(char * file)
+{
+	// Load a wave audio file onto a secondary buffer.
+	LoadWaveFile(file, &m_secondaryBuffer1);
+
 }
 
 void SoundClass::Shutdown()
@@ -295,6 +302,18 @@ bool SoundClass::LoadWaveFile(char* filename, IDirectSoundBuffer8** secondaryBuf
 	waveData = 0;
 
 	return true;
+}
+
+void SoundClass::StopWaveFile()
+{
+	// Release the secondary sound buffer.
+	if (m_secondaryBuffer1)
+	{
+		(m_secondaryBuffer1)->Release();
+		m_secondaryBuffer1 = 0;
+	}
+
+	return;
 }
 
 void SoundClass::ShutdownWaveFile(IDirectSoundBuffer8** secondaryBuffer)

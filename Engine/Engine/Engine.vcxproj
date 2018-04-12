@@ -88,10 +88,12 @@
     <ClCompile Include="cpuclass.cpp" />
     <ClCompile Include="d3dclass.cpp" />
     <ClCompile Include="Debugwindowclass.cpp" />
+    <ClCompile Include="Dungeon.cpp" />
     <ClCompile Include="Fogshaderclass.cpp" />
     <ClCompile Include="fontclass.cpp" />
     <ClCompile Include="fontshaderclass.cpp" />
     <ClCompile Include="fpsclass.cpp" />
+    <ClCompile Include="GenRoom.cpp" />
     <ClCompile Include="imgui.cpp" />
     <ClCompile Include="imgui_demo.cpp" />
     <ClCompile Include="imgui_draw.cpp" />
@@ -125,17 +127,21 @@
     <ClCompile Include="transparentshaderclass.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Airship.h" />
     <ClInclude Include="applicationclass.h" />
     <ClInclude Include="Automata.h" />
     <ClInclude Include="cameraclass.h" />
     <ClInclude Include="CaveGenerator.h" />
+    <ClInclude Include="Coord.h" />
     <ClInclude Include="cpuclass.h" />
     <ClInclude Include="d3dclass.h" />
     <ClInclude Include="Debugwindowclass.h" />
+    <ClInclude Include="Dungeon.h" />
     <ClInclude Include="Fogshaderclass.h" />
     <ClInclude Include="fontclass.h" />
     <ClInclude Include="fontshaderclass.h" />
     <ClInclude Include="fpsclass.h" />
+    <ClInclude Include="GenRoom.h" />
     <ClInclude Include="imconfig.h" />
     <ClInclude Include="imgui.h" />
     <ClInclude Include="imgui_impl_dx11.h" />
