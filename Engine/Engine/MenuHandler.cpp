@@ -52,7 +52,7 @@ void MenuHandler::callInventory(bool isVisible, Player &player, std::vector<Item
 			}
 			ImGui::SameLine(350); ImGui::Text("(+%d DMG)", inventory.at(i)->power);
 		}
-		ImGui::End(); // (:
+		ImGui::End(); 
 	}
 }
 
@@ -86,6 +86,7 @@ void MenuHandler::callPlayerActions(bool isVisible, Player & player, vector<Obje
 	if (isVisible) {
 		ImGui::Begin("Actions", &menuActive);
 		if (ImGui::Button("Attack", ImVec2(72, 72))) {
+			updateLogAddUpdate(player.attack(objs));
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Interact", ImVec2(72, 72))) {

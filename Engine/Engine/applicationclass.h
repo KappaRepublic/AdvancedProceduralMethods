@@ -39,6 +39,8 @@ const float SCREEN_NEAR = 0.1f;
 #include "textureshaderclass.h"
 #include "transparentshaderclass.h"
 #include "Fogshaderclass.h"
+#include "skyplaneclass.h"
+#include "skyplaneshaderclass.h"
 
 #include "lightclass.h"
 #include "perlinnoise.h"
@@ -95,10 +97,13 @@ public:
 	std::list<Room*> roomVector;
 	std::vector<Item*> inventory;
 	std::vector<Object*> levelObjects;
+	Object crystal;
 
 	void generateRooms();
 	void generateCave();
 	void generateTrees();
+	void generateChests();
+	void spawnCrystal();
 	void adjustLevel();
 	void createHCorridor(int x1, int x2, int y);
 	void createVCorridor(int y1, int y2, int x);
@@ -108,6 +113,8 @@ public:
 	void processMap();
 	bool checkValidEntrance(int x, int y);
 	bool checkIfBeach(int x, int y);
+	int getNeighbouringWalls(int x, int y);
+	void setPlayerSpawn();
 
 	LevelCell levelLayout[LEVEL_WIDTH][LEVEL_HEIGHT];
 	
@@ -170,7 +177,13 @@ private:
 	ModelClass* dungeonFloorTile;
 	ModelClass* beachTile;
 
+	// Pre-Made Objects
 	ModelClass* treeModel;
+	ModelClass* chestModel;
+	ModelClass* crystalModel;
+
+	SkyPlaneClass* skyPlane;
+	SkyPlaneShaderClass* skyShader;
 
 
 	IDirectInputDevice8* m_mouse;
@@ -193,6 +206,13 @@ private:
 	int maxRoomHeight = 10;
 	int minRoomWidth = 3;
 	int minRoomHeight = 3;
+
+	// Dungeon position
+	int dungeonPositionX = 25;
+	int dungeonPositionY = 25;
+
+	// Player spawn stuff
+	int minDungeonDistance = 25;
 
 	// Menu Handler
 	MenuHandler mHandler;

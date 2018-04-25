@@ -64,8 +64,8 @@ void Dungeon::generateRooms()
 	// Loop for the amount of attempts to create rooms
 	for (int i = 0; i < noOfAttempts - 1; i++) {
 		// Attempt to generate a room at a random position with random size values
-		randX = rand() % width;
-		randY = rand() % height;
+		randX = rand() % width + 1;
+		randY = rand() % height + 1;
 		randWidth = rand() % roomMaxWidth + 1;
 		if (randWidth < roomMinWidth) {
 			randWidth = roomMinWidth;

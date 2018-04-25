@@ -47,11 +47,16 @@ ApplicationClass::ApplicationClass(SoundClass* s)
 	beachTile = 0;
 
 	treeModel = 0;
+	chestModel = 0;
+	crystalModel = 0;
 
 	sound = s;
 
 	outsideMusic = true;
 	insideMusic = false;
+
+	skyPlane = 0;
+	skyShader = 0;
 
 }
 
@@ -322,6 +327,14 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	m_Light->SetDiffuseColor(0.9f, 0.7f, 0.4f, 1.0f);
 	m_Light->SetDirection(0.5f, -1.0f, 0.5f);
 
+	// Create the sky and shader
+	skyPlane = new SkyPlaneClass;
+	skyPlane->Initialize(m_Direct3D->GetDevice(), L"../Engine/data/cloud001.dds", L"../Engine/data/perturb001.dds");
+
+	skyShader = new SkyPlaneShaderClass;
+	skyShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+
+
 	player = new Player;
 	if (!player) {
 		return false;
@@ -345,7 +358,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 	// Create pre made tiles
-	grassTile = new ModelClass;
+	grassTile = new ModelClass();
 	grassTile->Initialize(m_Direct3D->GetDevice(), "../Engine/data/floorOutside.txt", L"../Engine/data/grass.jpg", L"../Engine/data/minimapGrass.png", NULL);
 
 	waterTile = new ModelClass;
@@ -360,8 +373,16 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	beachTile = new ModelClass;
 	beachTile->Initialize(m_Direct3D->GetDevice(), "../Engine/data/floorOutside.txt", L"../Engine/data/beach.jpg", L"../Engine/data/minimapGrass.png", NULL);
 
+	// Create pre made models
 	treeModel = new ModelClass;
 	treeModel->Initialize(m_Direct3D->GetDevice(), "../Engine/data/player.txt", L"../Engine/data/tree.png", L"../Engine/data/tree.png", NULL);
+
+	chestModel = new ModelClass;
+	chestModel->Initialize(m_Direct3D->GetDevice(), "../Engine/data/player.txt", L"../Engine/data/chestTexture.png", L"../Engine/data/chestTexture.png", NULL);
+
+	crystalModel = new ModelClass;
+	crystalModel->Initialize(m_Direct3D->GetDevice(), "../Engine/data/player.txt", L"../Engine/data/divCrystal.png", L"../Engine/data/divCrystal.png", NULL);
+
 
 	// Fill in map with blank space
 	for (int x = 0; x < LEVEL_WIDTH; x++) {
@@ -379,7 +400,13 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	generateCave();
 	generateDungeon();
 	processMap();
+	
+	
+	generateChests();
 	generateTrees();
+	spawnCrystal();
+	setPlayerSpawn();
+	
 	
 
 
@@ -457,6 +484,18 @@ void ApplicationClass::Shutdown()
 	{
 		delete m_Light;
 		m_Light = 0;
+	}
+
+	if (skyPlane) {
+		skyPlane->Shutdown();
+		delete skyPlane;
+		skyPlane = 0;
+	}
+
+	if (skyShader) {
+		skyShader->Shutdown();
+		delete skyShader;
+		skyShader = 0;
 	}
 
 	// Release the debug window object.
@@ -631,6 +670,18 @@ void ApplicationClass::Shutdown()
 		treeModel = 0;
 	}
 
+	if (chestModel) {
+		chestModel->Shutdown();
+		delete chestModel;
+		chestModel = 0;
+	}
+
+	if (crystalModel) {
+		crystalModel->Shutdown();
+		delete crystalModel;
+		crystalModel = 0;
+	}
+
 	// Clear lists and vectors
 	levelObjects.clear();
 	roomVector.clear();
@@ -740,6 +791,8 @@ bool ApplicationClass::Frame()
 		m_Text->updateTextWithItem(1, *inventory.at(player->equippedWeapon), m_Direct3D->GetDeviceContext());
 	}
 	// m_Text->updateTextWithItem(2, *inventory.at(1), m_Direct3D->GetDeviceContext());
+
+	skyPlane->Frame();
 
 	// Music?
 	if (!insideMusic) {
@@ -955,6 +1008,118 @@ void ApplicationClass::generateTrees() {
 	}
 }
 
+
+// Generate chests in certain positions aroubd the map
+// The chances for certain tiles spawning chests is as follows
+
+// Outside Dungeon:
+
+// Inside Dungeon:
+// No walls beside tile ~1%
+// 1 Wall beside tile ~3%
+// 2 Walls beside tile ~6%
+// 3 Walls beside tile (dead end) ~100%
+
+void ApplicationClass::generateChests()
+{
+	int randValue = 0;
+	Object* tempObject = new Object();
+
+	for (int x = 0; x < LEVEL_WIDTH; x++) {
+		for (int y = 0; y < LEVEL_HEIGHT; y++) {
+			// If the checked tile is dungeon floor
+			if (levelLayout[x][y].type == LevelCell::CellType::dFloor) {
+				switch (getNeighbouringWalls(x, y)) {
+				case 0:
+					randValue = rand() % 100;
+					if (randValue == 0) {
+						// Generate a new chest to place at current position
+						
+						tempObject = new Object();
+
+						tempObject->init(ObjectType::chest, m_Direct3D->GetDevice(), chestModel,
+							x, 0, y, 0.0f, 0.0f, 0.0f);
+
+						levelObjects.push_back(tempObject);
+					}
+					break;
+				case 1:
+					randValue = rand() % 33;
+					if (randValue == 0) {
+						// Generate a new chest to place at current position
+
+						tempObject = new Object();
+
+						tempObject->init(ObjectType::chest, m_Direct3D->GetDevice(), chestModel,
+							x, 0, y, 0.0f, 0.0f, 0.0f);
+
+						levelObjects.push_back(tempObject);
+					}
+					break;
+				case 2:
+					randValue = rand() % 17;
+					if (randValue == 0) {
+						// Generate a new chest to place at current position
+
+						tempObject = new Object();
+
+						tempObject->init(ObjectType::chest, m_Direct3D->GetDevice(), chestModel,
+							x, 0, y, 0.0f, 0.0f, 0.0f);
+
+						levelObjects.push_back(tempObject);
+					}
+					break;
+				case 3:
+					// Generate a new chest to place at current position
+
+					tempObject = new Object();
+
+					tempObject->init(ObjectType::chest, m_Direct3D->GetDevice(), chestModel,
+						x, 0, y, 0.0f, 0.0f, 0.0f);
+
+					levelObjects.push_back(tempObject);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+	}
+
+	delete tempObject;
+	tempObject = 0;
+}
+
+void ApplicationClass::spawnCrystal()
+{
+	int randChance = 0;
+
+	// Loop until a spawn point is established
+	while (true) {
+		for (int x = 0; x < LEVEL_WIDTH; x++) {
+			for (int y = 0; y < LEVEL_HEIGHT; y++) {
+				if (levelLayout[x][y].type != LevelCell::CellType::dFloor) {
+					// If the checked cell is not grass, move onto the next loop
+					continue;
+				}
+				else {
+					randChance = rand() % 100;
+					if (randChance == 0) {
+						// tempObject = new Object();
+
+						crystal.init(ObjectType::crystal, m_Direct3D->GetDevice(), crystalModel,
+							x, 0, y, 0.0f, 0.0f, 0.0f);
+
+						return;
+					}
+
+				}
+			}
+		}
+	}
+}
+
+
 void ApplicationClass::adjustLevel()
 {
 	for (Room* const& i : roomVector) {
@@ -1003,18 +1168,19 @@ void ApplicationClass::generateDungeon()
 	for (int x = 0; x < dungeon.width + dungeon.widthAdjust; x++) {
 		for (int y = 0; y < dungeon.height + dungeon.heightAdjust; y++) {
 			if (dungeon.map[x][y] == 1) {
-				levelLayout[x][y].initialize(m_Direct3D->GetDevice(), dungeonWallTile, LevelCell::CellType::dWall);
-				levelLayout[x][y].wall = true;
+				levelLayout[x + dungeonPositionX][y + dungeonPositionY].initialize(m_Direct3D->GetDevice(), dungeonWallTile, LevelCell::CellType::dWall);
+				levelLayout[x + dungeonPositionX][y + dungeonPositionY].wall = true;
 			}
 			else if (dungeon.map[x][y] == 0) {
-				levelLayout[x][y].initialize(m_Direct3D->GetDevice(), dungeonFloorTile, LevelCell::CellType::dFloor);
-				levelLayout[x][y].wall = false;
+				levelLayout[x + dungeonPositionX][y + dungeonPositionY].initialize(m_Direct3D->GetDevice(), dungeonFloorTile, LevelCell::CellType::dFloor);
+				levelLayout[x + dungeonPositionX][y + dungeonPositionY].wall = false;
 			}
 		}
 	}
 
 }
 
+// After the map has been generated, loop through once more to adjust tiles based on rules.
 void ApplicationClass::processMap()
 {
 	int entrancesToMake = 3;
@@ -1057,6 +1223,7 @@ void ApplicationClass::processMap()
 	}
 }
 
+// Returns true if the checked tile is a wall, with a dungeon floor on one side and grass on the other
 bool ApplicationClass::checkValidEntrance(int x, int y)
 {
 	bool floorFound = false;
@@ -1070,7 +1237,7 @@ bool ApplicationClass::checkValidEntrance(int x, int y)
 				continue;
 			}
 			else {
-				if (neighbourX != x || neighbourY != y) {
+				if (neighbourX == x || neighbourY == y) {
 					if (levelLayout[neighbourX][neighbourY].type == LevelCell::CellType::grass) {
 						grassFound = true;
 					}
@@ -1085,6 +1252,7 @@ bool ApplicationClass::checkValidEntrance(int x, int y)
 	return grassFound && floorFound;
 }
 
+// Returns true if the checked tile is next to a water tile
 bool ApplicationClass::checkIfBeach(int x, int y)
 {
 	for (int neighbourX = x - 1; neighbourX <= x + 1; neighbourX++) {
@@ -1103,6 +1271,56 @@ bool ApplicationClass::checkIfBeach(int x, int y)
 	return false;
 }
 
+int ApplicationClass::getNeighbouringWalls(int x, int y)
+{
+	int neighbouringWalls = 0;
+
+	for (int neighbourX = x - 1; neighbourX <= x + 1; neighbourX++) {
+		for (int neighbourY = y - 1; neighbourY <= y + 1; neighbourY++) {
+			if (neighbourX < 0 || neighbourX > LEVEL_WIDTH || neighbourY < 0 || neighbourY > LEVEL_HEIGHT) {
+				// Continue to next cell to be checked
+				continue;
+			}
+			else {
+				if (neighbourX == x || neighbourY == y) {
+					if (levelLayout[neighbourX][neighbourY].type == LevelCell::CellType::dWall) {
+						neighbouringWalls += 1;
+					}
+				}
+			}
+		}
+	}
+
+	return neighbouringWalls;
+}
+
+// Spawns the player on a valid tile
+void ApplicationClass::setPlayerSpawn()
+{
+	int randChance = 0;
+
+	// Loop until a spawn point is established
+	while (true) {
+		for (int x = 0; x < LEVEL_WIDTH; x++) {
+			for (int y = 0; y < LEVEL_HEIGHT; y++) {
+				if (levelLayout[x][y].type != LevelCell::CellType::grass) {
+					// If the checked cell is not grass, move onto the next loop
+					continue;
+				}
+				else {
+					randChance = rand() % 100;
+					if (randChance == 0) {
+						player->setPosition((float)x, 0.0f, (float)y);
+						return;
+					}
+					
+				}
+			}
+		}
+	}
+}
+
+// Process any of the player's inputs.
 bool ApplicationClass::HandleInput(float frameTime)
 {
 	bool keyDown, result;
@@ -1276,7 +1494,7 @@ bool ApplicationClass::RenderGraphics()
 	// Generate the view matrix based on the camera's position.
 
 	// Clear the scene.
-	m_Direct3D->BeginScene(fogColour, fogColour, fogColour, 1.0f);
+	m_Direct3D->BeginScene(0.52f, 0.8f, 0.92f, 1.0f);
 
 	m_Camera->Render();
 
@@ -1285,6 +1503,22 @@ bool ApplicationClass::RenderGraphics()
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 	m_Direct3D->GetOrthoMatrix(orthoMatrix);
+
+
+	D3DXMatrixTranslation(&worldMatrix, player->getPosition().x, 0.0f, player->getPosition().z);
+
+	m_Direct3D->TurnZBufferOff();
+
+	// Enable additive blending so the clouds blend with the sky dome color
+	m_Direct3D->EnableSecondBlendState();
+	// Render sky plane
+	skyPlane->Render(m_Direct3D->GetDeviceContext());
+	skyShader->Render(m_Direct3D->GetDeviceContext(), skyPlane->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		skyPlane->GetCloudTexture(), skyPlane->GetPerturbTexture(), skyPlane->GetTranslation(), skyPlane->GetScale(),
+		skyPlane->GetBrightness());
+
+
+	m_Direct3D->TurnZBufferOn();
 
 	// Render the terrain buffers.
 	/*
@@ -1299,6 +1533,8 @@ bool ApplicationClass::RenderGraphics()
 		return false;
 	}
 	*/
+
+	m_Direct3D->TurnOffAlphaBlending();
 
 	for (int i = 0; i < LEVEL_WIDTH; i++) {
 		for (int j = 0; j < LEVEL_HEIGHT; j++) {
@@ -1391,10 +1627,10 @@ bool ApplicationClass::RenderGraphics()
 			
 		}
 	}
-	
-	modelPos.x = airship.getPosition().x;
+
+	modelPos.x = crystal.getPosition().x;
 	modelPos.y = 0.0f;
-	modelPos.z = airship.getPosition().z;
+	modelPos.z = crystal.getPosition().z;
 
 	angle = atan2(modelPos.x - cameraPos.x, modelPos.z - cameraPos.z) * (180.0 / D3DX_PI);
 
@@ -1406,45 +1642,18 @@ bool ApplicationClass::RenderGraphics()
 	// Setup the translation matrix from the billboard model.
 	D3DXMatrixTranslation(&translateMatrix, modelPos.x, modelPos.y, modelPos.z);
 
-	// Finally combine the rotation and translation matrices to create the final world matrix for the billboard model.
-	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
+	crystal.getMesh()->Render(m_Direct3D->GetDeviceContext());
+
+	if (levelLayout[(int)player->getPosition().x][(int)player->getPosition().z].type == LevelCell::CellType::dFloor) {
+		fogShader->Render(m_Direct3D->GetDeviceContext(), crystal.getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, crystal.getMesh()->getTexture1(), fogStart, fogEnd);
+
+	}
+	else {
+		textureShader->Render(m_Direct3D->GetDeviceContext(), crystal.getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, crystal.getMesh()->getTexture1());
+
+	}
 
 
-	textureShader->Render(m_Direct3D->GetDeviceContext(), airship.getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, airship.getMesh()->getTexture1());
-
-
-	/*
-	m_Direct3D->TurnOffAlphaBlending();
-
-	modelPos.x = roomVector.back()->getCenterX();
-	modelPos.y = 0.0f;
-	modelPos.z = roomVector.back()->getCenterY();
-
-	angle = atan2(modelPos.x - cameraPos.x, modelPos.z - cameraPos.z) * (180.0 / D3DX_PI);
-
-	rotation = (float)angle * 0.0174532925f;
-
-	// Setup the rotation the billboard at the origin using the world matrix.
-	D3DXMatrixRotationY(&worldMatrix, rotation);
-
-	// Setup the translation matrix from the billboard model.
-	D3DXMatrixTranslation(&translateMatrix, modelPos.x, modelPos.y, modelPos.z);
-
-	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
-	
-
-	// Render all objects in the level
-	
-	// Turn on the alpha blending before rendering the text.
-	m_Direct3D->TurnOnAlphaBlending();
-	// D3DXMatrixTranslation(&worldMatrix, 8.0f, 0.0f, 8.5f);
-
-	npc->Render(m_Direct3D->GetDeviceContext());
-	fogShader->Render(m_Direct3D->GetDeviceContext(), npc->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, npc->getTexture1(), fogStart, fogEnd);
-
-	// Turn on the alpha blending before rendering the text.
-	m_Direct3D->TurnOffAlphaBlending();
-	*/
 
 	D3DXMatrixRotationX(&worldMatrix, 0.0f);
 
@@ -1694,6 +1903,23 @@ bool ApplicationClass::RenderToTexture()
 
 		}
 	}
+
+	modelPos.x = crystal.getPosition().x;
+	modelPos.y = -0.5f;
+	modelPos.z = crystal.getPosition().z;
+
+	// Setup the rotation the billboard at the origin using the world matrix.
+	D3DXMatrixRotationX(&worldMatrix, 1.5708f);
+
+	// Setup the translation matrix from the billboard model.
+	D3DXMatrixTranslation(&translateMatrix, modelPos.x, modelPos.y, modelPos.z);
+
+	// Finally combine the rotation and translation matrices to create the final world matrix for the billboard model.
+	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
+
+	crystal.getMesh()->Render(m_Direct3D->GetDeviceContext());
+	textureShader->Render(m_Direct3D->GetDeviceContext(), crystal.getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, crystal.getMesh()->getTexture2());
+
 
 	// Reset the render target back to the original back buffer and not the render to texture anymore.
 	m_Direct3D->SetBackBufferRenderTarget();

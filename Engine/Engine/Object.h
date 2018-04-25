@@ -8,6 +8,7 @@ enum ObjectType {
 	npc = 1,
 	chest = 2,
 	tree = 3,
+	crystal = 4
 };
 
 

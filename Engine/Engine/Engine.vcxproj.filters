@@ -168,6 +168,12 @@
     <ClCompile Include="Dungeon.cpp">
       <Filter>Source Files\Generators</Filter>
     </ClCompile>
+    <ClCompile Include="Skyplaneclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Skyplaneshaderclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h">
@@ -302,6 +308,12 @@
     <ClInclude Include="Airship.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Skyplaneclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Skyplaneshaderclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="terrain.vs">
@@ -351,6 +363,12 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="fog.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="skyplane.ps">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="skyplane.vs">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

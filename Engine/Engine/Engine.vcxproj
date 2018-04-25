@@ -115,6 +115,8 @@
     <ClCompile Include="positionclass.cpp" />
     <ClCompile Include="Rendertextureclass.cpp" />
     <ClCompile Include="Room.cpp" />
+    <ClCompile Include="Skyplaneclass.cpp" />
+    <ClCompile Include="Skyplaneshaderclass.cpp" />
     <ClCompile Include="soundclass.cpp" />
     <ClCompile Include="systemclass.cpp" />
     <ClCompile Include="terrainclass.cpp" />
@@ -161,6 +163,8 @@
     <ClInclude Include="positionclass.h" />
     <ClInclude Include="Rendertextureclass.h" />
     <ClInclude Include="Room.h" />
+    <ClInclude Include="Skyplaneclass.h" />
+    <ClInclude Include="Skyplaneshaderclass.h" />
     <ClInclude Include="soundclass.h" />
     <ClInclude Include="systemclass.h" />
     <ClInclude Include="terrainclass.h" />
@@ -202,6 +206,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </None>
     <None Include="PointLight.vs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="skyplane.vs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="skyplane.ps">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </None>
     <None Include="terrain.ps">

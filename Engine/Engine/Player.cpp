@@ -44,6 +44,60 @@ void Player::shutDown()
 	}
 }
 
+const char * Player::attack(vector<Object*>& objs)
+{
+	// Check if the player is facing any interactable objects, and perform the correct functionality for any object that is found.
+
+	// 0 is up, 1 is right, 2 is down, 3 is left
+	switch (direction) {
+	case 0:
+		for (int i = 0; i < objs.size(); i++) {
+			if (objs.at(i)->getPosition().x == (int)getPosition().x && objs.at(i)->getPosition().z == getPosition().z + 1 == true) {
+				if (objs.at(i)->getObjectType() == ObjectType::tree) {
+					// Destroy any trees that are attacked
+					objs.erase(objs.begin() + i);
+					return "You attack > The tree falls";
+				}
+			}
+		}
+		break;
+	case 1:
+		for (int i = 0; i < objs.size(); i++) {
+			if (objs.at(i)->getPosition().x == (int)getPosition().x + 1 && objs.at(i)->getPosition().z == getPosition().z == true) {
+				if (objs.at(i)->getObjectType() == ObjectType::tree) {
+					objs.erase(objs.begin() + i);
+					return "You attack > The tree falls";
+				}
+			}
+		}
+		break;
+	case 2:
+		for (int i = 0; i < objs.size(); i++) {
+			if (objs.at(i)->getPosition().x == (int)getPosition().x && objs.at(i)->getPosition().z == getPosition().z - 1 == true) {
+				if (objs.at(i)->getObjectType() == ObjectType::tree) {
+					objs.erase(objs.begin() + i);
+					return "You attack > The tree falls";
+				}
+			}
+		}
+		break;
+	case 3:
+		for (int i = 0; i < objs.size(); i++) {
+			if (objs.at(i)->getPosition().x == (int)getPosition().x - 1 && objs.at(i)->getPosition().z == getPosition().z == true) {
+				if (objs.at(i)->getObjectType() == ObjectType::tree) {
+					objs.erase(objs.begin() + i);
+					return "You attack > The tree falls";
+				}
+			}
+		}
+		break;
+	default:
+		break;
+	}
+
+	return "You attack > The air takes 0 damage.";
+}
+
 const char* Player::interact(vector<Object*>& objs, vector<Item*>& inv)
 {
 	// Check if the player is facing any interactable objects, and perform the correct functionality for any object that is found.
