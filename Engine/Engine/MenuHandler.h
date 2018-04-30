@@ -23,7 +23,7 @@ public:
 	void callInventory(bool isVisible, Player &player, std::vector<Item*> &inventory);
 	void callEquipment(bool isVisible, Player &player);
 	void callPlayerStatus(bool isVisible, Player& player);
-	void callPlayerActions(bool isVisible, Player& player, vector<Object*>& objs, vector<Item*>& inv);
+	void callPlayerActions(bool isVisible, Player& player, vector<Object*>& objs, vector<Item*>& inv, Object& crystal);
 	void updateLogAddUpdate(const char* text);
 	void callUpdateLog(bool isVisible);
 	void clearUpdateLog();

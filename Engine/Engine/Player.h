@@ -15,7 +15,7 @@ public:
 	void shutDown();
 
 	const char* attack(vector<Object*>& objs);
-	const char* interact(vector<Object*>& objs, vector<Item*>& inv);
+	const char* interact(vector<Object*>& objs, vector<Item*>& inv, Object& crystal);
 
 	ModelClass* getMesh() { return mesh; };
 	void setPosition(float posX, float posY, float posZ);

@@ -81,7 +81,7 @@ void MenuHandler::callPlayerStatus(bool isVisible, Player & player)
 	ImGui::End();
 }
 
-void MenuHandler::callPlayerActions(bool isVisible, Player & player, vector<Object*>& objs, vector<Item*>& inv)
+void MenuHandler::callPlayerActions(bool isVisible, Player & player, vector<Object*>& objs, vector<Item*>& inv, Object& crystal)
 {
 	if (isVisible) {
 		ImGui::Begin("Actions", &menuActive);
@@ -90,7 +90,7 @@ void MenuHandler::callPlayerActions(bool isVisible, Player & player, vector<Obje
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Interact", ImVec2(72, 72))) {
-			updateLogAddUpdate(player.interact(objs, inv));	
+			updateLogAddUpdate(player.interact(objs, inv, crystal));	
 		}
 		ImGui::End();
 	}

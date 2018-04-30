@@ -98,7 +98,7 @@ const char * Player::attack(vector<Object*>& objs)
 	return "You attack > The air takes 0 damage.";
 }
 
-const char* Player::interact(vector<Object*>& objs, vector<Item*>& inv)
+const char* Player::interact(vector<Object*>& objs, vector<Item*>& inv, Object& crystal)
 {
 	// Check if the player is facing any interactable objects, and perform the correct functionality for any object that is found.
 
@@ -117,6 +117,10 @@ const char* Player::interact(vector<Object*>& objs, vector<Item*>& inv)
 				}
 			}
 		}
+		if (crystal.getPosition().x == (int)getPosition().x && crystal.getPosition().z == getPosition().z + 1 == true) {
+			exit(-1);
+			return nullptr;
+		}
 		break;
 	case 1:
 		for (int i = 0; i < objs.size(); i++) {
@@ -130,6 +134,10 @@ const char* Player::interact(vector<Object*>& objs, vector<Item*>& inv)
 					return inv.back()->obtainedMessage.c_str();
 				}
 			}
+		}
+		if (crystal.getPosition().x == (int)getPosition().x + 1 && crystal.getPosition().z == getPosition().z == true) {
+			exit(-1);
+			return nullptr;
 		}
 		break;
 	case 2:
@@ -145,6 +153,10 @@ const char* Player::interact(vector<Object*>& objs, vector<Item*>& inv)
 				}
 			}
 		}
+		if (crystal.getPosition().x == (int)getPosition().x && crystal.getPosition().z == getPosition().z - 1 == true) {
+			exit(-1);
+			return nullptr;
+		}
 		break;
 	case 3:
 		for (int i = 0; i < objs.size(); i++) {
@@ -158,6 +170,10 @@ const char* Player::interact(vector<Object*>& objs, vector<Item*>& inv)
 					return inv.back()->obtainedMessage.c_str();
 				}
 			}
+		}
+		if (crystal.getPosition().x == (int)getPosition().x - 1 && crystal.getPosition().z == getPosition().z == true) {
+			exit(-1);
+			return nullptr;
 		}
 		break;
 	default:

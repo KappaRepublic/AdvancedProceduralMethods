@@ -79,19 +79,11 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	char videoCard[128];
 	int videoMemory;
 
+	// Seeded rand
 	srand(time(NULL));
 
-	// caveGen.build();
-	// caveGen.connectCaves();
+	sound->StopWaveFile();
 
-	
-
-	/*
-	Object* tempObject = new Object();
-	tempObject->init(ObjectType::chest, m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/chestTexture.png", NULL,
-		roomVector.back()->getCenterX(), 0.0f, roomVector.back()->getCenterY(), 0.0f, 0.0f, 0.0f);
-	levelObjects.push_back(tempObject);
-	*/
 
 	// Create the input object.  The input object will be used to handle reading the keyboard and mouse input from the user.
 	m_Input = new InputClass;
@@ -698,13 +690,13 @@ bool ApplicationClass::Frame()
 	// Call a new frame for ImGui
 	ImGui_ImplDX11_NewFrame();
 
+	// Call menu related functions
 	mHandler.callMainMenu(true, inventoryActive, equipmentActive);
 	mHandler.callInventory(inventoryActive, *player, inventory);
 	mHandler.callEquipment(equipmentActive, *player);
-	mHandler.callPlayerActions(true, *player, levelObjects, inventory);
+	mHandler.callPlayerActions(true, *player, levelObjects, inventory, crystal);
 	mHandler.callUpdateLog(true);
 	mHandler.callPlayerStatus(true, *player);
-
 
 	ImGui::Begin("Minimap", &testWindow, ImVec2(196, 196), ImGuiWindowFlags_NoResize);
 	ImVec2 pos = ImGui::GetCursorScreenPos();
@@ -723,23 +715,6 @@ bool ApplicationClass::Frame()
 	}
 	ImGui::End();
 
-	ImGui::Begin("Generate Dungeon", &testWindow);
-	if (ImGui::TreeNode("Basic Level Generation"))
-	{
-		ImGui::InputInt("Level Width", &levelWidth);
-		ImGui::InputInt("Level Height", &levelHeight);
-		ImGui::InputInt("No. of Room Attempts", &noOfAttempts);
-		ImGui::InputInt("Max Room Width", &maxRoomWidth);
-		ImGui::InputInt("Max Room Height", &maxRoomHeight);
-		ImGui::InputInt("Min Room Width", &minRoomWidth);
-		ImGui::InputInt("Min Room Height", &minRoomHeight);
-
-		if (ImGui::Button("Generate Level")) {
-		}
-
-		ImGui::TreePop();
-	}
-	ImGui::End();
 
 	// Read the user input.
 	result = m_Input->Frame();
@@ -797,27 +772,27 @@ bool ApplicationClass::Frame()
 	// Music?
 	if (!insideMusic) {
 		if (levelLayout[(int)player->getPosition().x][(int)player->getPosition().z].type == LevelCell::CellType::dFloor) {
-			sound->StopWaveFile();
+			//sound->StopWaveFile();
 
 			sound->loadNew("../Engine/data/dungeon.wav");
 
 			insideMusic = true;
 			outsideMusic = false;
 
-			sound->PlayWaveFile();
+			//sound->PlayWaveFile();
 		}
 	}
 
 	if (!outsideMusic) {
 		if (levelLayout[(int)player->getPosition().x][(int)player->getPosition().z].type != LevelCell::CellType::dFloor) {
-			sound->StopWaveFile();
+			//sound->StopWaveFile();
 
 			sound->loadNew("../Engine/data/world.wav");
 
 			insideMusic = false;
 			outsideMusic = true;
 
-			sound->PlayWaveFile();
+			//sound->PlayWaveFile();
 		}
 	}
 
@@ -1642,6 +1617,8 @@ bool ApplicationClass::RenderGraphics()
 	// Setup the translation matrix from the billboard model.
 	D3DXMatrixTranslation(&translateMatrix, modelPos.x, modelPos.y, modelPos.z);
 
+	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
+
 	crystal.getMesh()->Render(m_Direct3D->GetDeviceContext());
 
 	if (levelLayout[(int)player->getPosition().x][(int)player->getPosition().z].type == LevelCell::CellType::dFloor) {
@@ -1662,15 +1639,6 @@ bool ApplicationClass::RenderGraphics()
 		
 	// Turn on the alpha blending before rendering the text.
 	m_Direct3D->TurnOnAlphaBlending();
-
-	// Render the text user interface elements.
-	/*
-	result = m_Text->Render(m_Direct3D->GetDeviceContext(), m_FontShader, worldMatrix, orthoMatrix);
-	if(!result)
-	{
-		return false;
-	}
-	*/
 
 	// Turn off alpha blending after rendering the text.
 	m_Direct3D->TurnOffAlphaBlending();
@@ -1714,6 +1682,9 @@ bool ApplicationClass::checkForCollision(int direction, bool movingForward)
 						return true;
 					}
 				}
+				if (crystal.getPosition().x == (int)player->getPosition().x && crystal.getPosition().z == (int)player->getPosition().z + 1 == true) {
+					return true;
+				}
 			}
 		}
 		else {
@@ -1725,6 +1696,9 @@ bool ApplicationClass::checkForCollision(int direction, bool movingForward)
 					if (levelObjects.at(i)->getPosition().x == (int)player->getPosition().x && levelObjects.at(i)->getPosition().z == (int)player->getPosition().z - 1 == true) {
 						return true;
 					}
+				}
+				if (crystal.getPosition().x == (int)player->getPosition().x && crystal.getPosition().z == (int)player->getPosition().z - 1 == true) {
+					return true;
 				}
 			}
 		}
@@ -1741,6 +1715,9 @@ bool ApplicationClass::checkForCollision(int direction, bool movingForward)
 						return true;
 					}
 				}
+				if (crystal.getPosition().x == (int)player->getPosition().x + 1 && crystal.getPosition().z == (int)player->getPosition().z == true) {
+					return true;
+				}
 			}
 		}
 		else {
@@ -1752,6 +1729,9 @@ bool ApplicationClass::checkForCollision(int direction, bool movingForward)
 					if (levelObjects.at(i)->getPosition().x == (int)player->getPosition().x - 1 && levelObjects.at(i)->getPosition().z == (int)player->getPosition().z == true) {
 						return true;
 					}
+				}
+				if (crystal.getPosition().x == (int)player->getPosition().x - 1 && crystal.getPosition().z == (int)player->getPosition().z == true) {
+					return true;
 				}
 			}
 		}
@@ -1767,6 +1747,9 @@ bool ApplicationClass::checkForCollision(int direction, bool movingForward)
 						return true;
 					}
 				}
+				if (crystal.getPosition().x == (int)player->getPosition().x && crystal.getPosition().z == (int)player->getPosition().z - 1 == true) {
+					return true;
+				}
 			}
 		}
 		else {
@@ -1778,6 +1761,9 @@ bool ApplicationClass::checkForCollision(int direction, bool movingForward)
 					if (levelObjects.at(i)->getPosition().x == (int)player->getPosition().x && levelObjects.at(i)->getPosition().z == (int)player->getPosition().z + 1 == true) {
 						return true;
 					}
+				}
+				if (crystal.getPosition().x == (int)player->getPosition().x && crystal.getPosition().z == (int)player->getPosition().z + 1 == true) {
+					return true;
 				}
 			}
 		}
@@ -1793,6 +1779,9 @@ bool ApplicationClass::checkForCollision(int direction, bool movingForward)
 						return true;
 					}
 				}
+				if (crystal.getPosition().x == (int)player->getPosition().x - 1 && crystal.getPosition().z == (int)player->getPosition().z == true) {
+					return true;
+				}
 			}
 		}
 		else {
@@ -1804,6 +1793,9 @@ bool ApplicationClass::checkForCollision(int direction, bool movingForward)
 					if (levelObjects.at(i)->getPosition().x == (int)player->getPosition().x + 1 && levelObjects.at(i)->getPosition().z == (int)player->getPosition().z == true) {
 						return true;
 					}
+				}
+				if (crystal.getPosition().x == (int)player->getPosition().x + 1 && crystal.getPosition().z == (int)player->getPosition().z == true) {
+					return true;
 				}
 			}
 		}
