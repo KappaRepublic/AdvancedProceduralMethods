@@ -41,6 +41,9 @@ const float SCREEN_NEAR = 0.1f;
 #include "Fogshaderclass.h"
 #include "skyplaneclass.h"
 #include "skyplaneshaderclass.h"
+#include "Horizontalblurshaderclass.h"
+#include "Verticalblurshaderclass.h"
+#include "Orthowindowclass.h"
 
 #include "lightclass.h"
 #include "perlinnoise.h"
@@ -137,6 +140,13 @@ private:
 	bool RenderToTexture();
 	bool RenderScene();
 
+	bool RenderSceneToTexture();
+	bool DownSampleTexture();
+	bool RenderHorizontalBlurToTexture();
+	bool RenderVerticalBlurToTexture();
+	bool UpSampleTexture();
+	bool Render2DTextureScene();
+
 	bool HandleInput(float);
 	bool RenderGraphics();
 
@@ -160,12 +170,20 @@ private:
 	TextureShaderClass* textureShader;
 	TransparentShaderClass* transShader;
 	FogShaderClass* fogShader;
+	HorizontalBlurShaderClass* m_HorizontalBlurShader;
+	VerticalBlurShaderClass* m_VerticalBlurShader;
+
+	RenderTextureClass *m_RenderTexture2, *m_DownSampleTexure, *m_HorizontalBlurTexture, *m_VerticalBlurTexture, *m_UpSampleTexure;
+
+	OrthoWindowClass *m_SmallWindow, *m_FullScreenWindow;
 
 	LightClass* m_Light;
 
 	Player* player;
 
 	ModelClass* npc;
+
+	ModelClass* renderTextureCube;
 
 	RenderTextureClass* m_RenderTexture;
 	DebugWindowClass* m_DebugWindow;
@@ -187,6 +205,9 @@ private:
 
 
 	IDirectInputDevice8* m_mouse;
+
+	bool doBlur;
+	bool inputBlur;
 
 	bool testInputOnce;
 	bool inputCameraChange;

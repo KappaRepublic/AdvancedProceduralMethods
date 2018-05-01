@@ -55,6 +55,7 @@ public:
 
 	ID3D11DepthStencilView* GetDepthStencilView();
 	void SetBackBufferRenderTarget();
+	void ResetViewport();
 
 	void EnableSecondBlendState();
 
@@ -76,6 +77,7 @@ private:
 	ID3D11DepthStencilState* m_depthDisabledStencilState;
 	ID3D11BlendState* m_alphaEnableBlendingState;
 	ID3D11BlendState* m_alphaDisableBlendingState;
+	D3D11_VIEWPORT m_viewport;
 
 	ID3D11BlendState* m_alphaBlendState2;
 };

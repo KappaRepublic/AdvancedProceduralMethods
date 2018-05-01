@@ -56,6 +56,7 @@ public:
 
 	bool isQPressed();
 	bool isEPressed();
+	bool isPPressed();
 
 	bool isWPressed();
 	bool isAPressed();

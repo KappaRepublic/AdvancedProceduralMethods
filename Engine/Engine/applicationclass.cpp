@@ -31,6 +31,9 @@ ApplicationClass::ApplicationClass(SoundClass* s)
 	m_RenderTexture = 0;
 	m_DebugWindow = 0;
 
+	doBlur = false;
+	inputBlur = false;
+
 	m_mouse = 0;
 
 	testInputOnce = false;
@@ -49,6 +52,7 @@ ApplicationClass::ApplicationClass(SoundClass* s)
 	treeModel = 0;
 	chestModel = 0;
 	crystalModel = 0;
+	renderTextureCube = 0;
 
 	sound = s;
 
@@ -57,6 +61,16 @@ ApplicationClass::ApplicationClass(SoundClass* s)
 
 	skyPlane = 0;
 	skyShader = 0;
+
+	m_HorizontalBlurShader = 0;
+	m_VerticalBlurShader = 0;
+	m_RenderTexture2 = 0;
+	m_DownSampleTexure = 0;
+	m_HorizontalBlurTexture = 0;
+	m_VerticalBlurTexture = 0;
+	m_UpSampleTexure = 0;
+	m_SmallWindow = 0;
+	m_FullScreenWindow = 0;
 
 }
 
@@ -78,6 +92,11 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	D3DXMATRIX baseViewMatrix;
 	char videoCard[128];
 	int videoMemory;
+	int downSampleWidth, downSampleHeight;
+
+	// Set the size to sample down to.
+	downSampleWidth = screenWidth / 2;
+	downSampleHeight = screenHeight / 2;
 
 	// Seeded rand
 	srand(time(NULL));
@@ -319,6 +338,141 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	m_Light->SetDiffuseColor(0.9f, 0.7f, 0.4f, 1.0f);
 	m_Light->SetDirection(0.5f, -1.0f, 0.5f);
 
+	// Create the horizontal blur shader object.
+	m_HorizontalBlurShader = new HorizontalBlurShaderClass;
+	if (!m_HorizontalBlurShader)
+	{
+		return false;
+	}
+
+	// Initialize the horizontal blur shader object.
+	result = m_HorizontalBlurShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the horizontal blur shader object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the vertical blur shader object.
+	m_VerticalBlurShader = new VerticalBlurShaderClass;
+	if (!m_VerticalBlurShader)
+	{
+		return false;
+	}
+
+	// Initialize the vertical blur shader object.
+	result = m_VerticalBlurShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the vertical blur shader object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the render to texture object.
+	m_RenderTexture = new RenderTextureClass;
+	if (!m_RenderTexture)
+	{
+		return false;
+	}
+
+	// Initialize the render to texture object.
+	result = m_RenderTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight, SCREEN_DEPTH, SCREEN_NEAR);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the render to texture object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the down sample render to texture object.
+	m_DownSampleTexure = new RenderTextureClass;
+	if (!m_DownSampleTexure)
+	{
+		return false;
+	}
+
+	// Initialize the down sample render to texture object.
+	result = m_DownSampleTexure->Initialize(m_Direct3D->GetDevice(), downSampleWidth, downSampleHeight, SCREEN_DEPTH, SCREEN_NEAR);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the down sample render to texture object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the horizontal blur render to texture object.
+	m_HorizontalBlurTexture = new RenderTextureClass;
+	if (!m_HorizontalBlurTexture)
+	{
+		return false;
+	}
+
+	// Initialize the horizontal blur render to texture object.
+	result = m_HorizontalBlurTexture->Initialize(m_Direct3D->GetDevice(), downSampleWidth, downSampleHeight, SCREEN_DEPTH, SCREEN_NEAR);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the horizontal blur render to texture object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the vertical blur render to texture object.
+	m_VerticalBlurTexture = new RenderTextureClass;
+	if (!m_VerticalBlurTexture)
+	{
+		return false;
+	}
+
+	// Initialize the vertical blur render to texture object.
+	result = m_VerticalBlurTexture->Initialize(m_Direct3D->GetDevice(), downSampleWidth, downSampleHeight, SCREEN_DEPTH, SCREEN_NEAR);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the vertical blur render to texture object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the up sample render to texture object.
+	m_UpSampleTexure = new RenderTextureClass;
+	if (!m_UpSampleTexure)
+	{
+		return false;
+	}
+
+	// Initialize the up sample render to texture object.
+	result = m_UpSampleTexure->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight, SCREEN_DEPTH, SCREEN_NEAR);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the up sample render to texture object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the small ortho window object.
+	m_SmallWindow = new OrthoWindowClass;
+	if (!m_SmallWindow)
+	{
+		return false;
+	}
+
+	// Initialize the small ortho window object.
+	result = m_SmallWindow->Initialize(m_Direct3D->GetDevice(), downSampleWidth, downSampleHeight);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the small ortho window object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the full screen ortho window object.
+	m_FullScreenWindow = new OrthoWindowClass;
+	if (!m_FullScreenWindow)
+	{
+		return false;
+	}
+
+	// Initialize the full screen ortho window object.
+	result = m_FullScreenWindow->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the full screen ortho window object.", L"Error", MB_OK);
+		return false;
+	}
+
 	// Create the sky and shader
 	skyPlane = new SkyPlaneClass;
 	skyPlane->Initialize(m_Direct3D->GetDevice(), L"../Engine/data/cloud001.dds", L"../Engine/data/perturb001.dds");
@@ -342,6 +496,8 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	
 	result = npc->Initialize(m_Direct3D->GetDevice(), "../Engine/data/player.txt", L"../Engine/data/chestTexture.png", NULL, NULL);
 
+	renderTextureCube = new ModelClass();
+	renderTextureCube->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/chestTexture.png", NULL, NULL);
 
 	for (int i = 0; i < LEVEL_WIDTH; i++) {
 		for (int j = 0; j < LEVEL_HEIGHT; j++) {
@@ -411,14 +567,14 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 	// Create the render to texture object.
-	m_RenderTexture = new RenderTextureClass;
-	if (!m_RenderTexture)
+	m_RenderTexture2 = new RenderTextureClass;
+	if (!m_RenderTexture2)
 	{
 		return false;
 	}
 
 	// Initialize the render to texture object.
-	result = m_RenderTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight);
+	result = m_RenderTexture2->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight, SCREEN_DEPTH, SCREEN_NEAR);
 	if (!result)
 	{
 		return false;
@@ -566,6 +722,78 @@ void ApplicationClass::Shutdown()
 		player = 0;
 	}
 
+	// Release the full screen ortho window object.
+	if (m_FullScreenWindow)
+	{
+		m_FullScreenWindow->Shutdown();
+		delete m_FullScreenWindow;
+		m_FullScreenWindow = 0;
+	}
+
+	// Release the small ortho window object.
+	if (m_SmallWindow)
+	{
+		m_SmallWindow->Shutdown();
+		delete m_SmallWindow;
+		m_SmallWindow = 0;
+	}
+
+	// Release the up sample render to texture object.
+	if (m_UpSampleTexure)
+	{
+		m_UpSampleTexure->Shutdown();
+		delete m_UpSampleTexure;
+		m_UpSampleTexure = 0;
+	}
+
+	// Release the vertical blur render to texture object.
+	if (m_VerticalBlurTexture)
+	{
+		m_VerticalBlurTexture->Shutdown();
+		delete m_VerticalBlurTexture;
+		m_VerticalBlurTexture = 0;
+	}
+
+	// Release the horizontal blur render to texture object.
+	if (m_HorizontalBlurTexture)
+	{
+		m_HorizontalBlurTexture->Shutdown();
+		delete m_HorizontalBlurTexture;
+		m_HorizontalBlurTexture = 0;
+	}
+
+	// Release the down sample render to texture object.
+	if (m_DownSampleTexure)
+	{
+		m_DownSampleTexure->Shutdown();
+		delete m_DownSampleTexure;
+		m_DownSampleTexure = 0;
+	}
+
+	// Release the render to texture object.
+	if (m_RenderTexture2)
+	{
+		m_RenderTexture2->Shutdown();
+		delete m_RenderTexture2;
+		m_RenderTexture2 = 0;
+	}
+
+	// Release the vertical blur shader object.
+	if (m_VerticalBlurShader)
+	{
+		m_VerticalBlurShader->Shutdown();
+		delete m_VerticalBlurShader;
+		m_VerticalBlurShader = 0;
+	}
+
+	// Release the horizontal blur shader object.
+	if (m_HorizontalBlurShader)
+	{
+		m_HorizontalBlurShader->Shutdown();
+		delete m_HorizontalBlurShader;
+		m_HorizontalBlurShader = 0;
+	}
+
 	// Release the cpu object.
 	if(m_Cpu)
 	{
@@ -579,6 +807,11 @@ void ApplicationClass::Shutdown()
 	{
 		delete m_Fps;
 		m_Fps = 0;
+	}
+
+	if (renderTextureCube) {
+		delete renderTextureCube;
+		renderTextureCube = 0;
 	}
 
 	// Release the position object.
@@ -1363,6 +1596,19 @@ bool ApplicationClass::HandleInput(float frameTime)
 		}
 	}
 
+	keyDown = m_Input->isPPressed();
+	if (keyDown) {
+		if (!inputBlur) {
+			doBlur = !doBlur;
+			inputBlur = true;
+		}
+	}
+	else {
+		if (inputBlur) {
+			inputBlur = false;
+		}
+	}
+
 	keyDown = m_Input->IsZPressed();
 	m_Position->MoveDownward(keyDown);
 
@@ -1461,6 +1707,7 @@ bool ApplicationClass::RenderGraphics()
 		m_Camera->SetRotation(0.0f, player->getRotation().y, 0.0f);
 	} 
 
+
 	/*
 	m_Camera->SetPosition(cPos.x, cPos.y, cPos.z);
 	m_Camera->SetRotation(cRot.x, cRot.y, cRot.z);
@@ -1470,6 +1717,8 @@ bool ApplicationClass::RenderGraphics()
 
 	// Clear the scene.
 	m_Direct3D->BeginScene(0.52f, 0.8f, 0.92f, 1.0f);
+
+	
 
 	m_Camera->Render();
 
@@ -1630,7 +1879,12 @@ bool ApplicationClass::RenderGraphics()
 
 	}
 
+	/*
+	D3DXMatrixTranslation(&worldMatrix, player->getPosition().x, player->getPosition().y, player->getPosition().z + 2);
 
+	renderTextureCube->Render(m_Direct3D->GetDeviceContext());
+	textureShader->Render(m_Direct3D->GetDeviceContext(), renderTextureCube->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_UpSampleTexure->GetShaderResourceView());
+	*/
 
 	D3DXMatrixRotationX(&worldMatrix, 0.0f);
 
@@ -1656,6 +1910,37 @@ bool ApplicationClass::RenderGraphics()
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	m_Direct3D->TurnZBufferOn();
 
+	
+	// Do the blur
+	if (doBlur) {
+		RenderSceneToTexture();
+		DownSampleTexture();
+		RenderHorizontalBlurToTexture();
+		RenderVerticalBlurToTexture();
+		UpSampleTexture();
+
+		m_Direct3D->GetOrthoMatrix(orthoMatrix);
+
+		// Turn off the Z buffer to begin all 2D rendering.
+		m_Direct3D->TurnZBufferOff();
+
+		// Put the full screen ortho window vertex and index buffers on the graphics pipeline to prepare them for drawing.
+		m_FullScreenWindow->Render(m_Direct3D->GetDeviceContext());
+
+		// Render the full screen ortho window using the texture shader and the full screen sized blurred render to texture resource.
+		result = textureShader->Render(m_Direct3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
+			m_UpSampleTexure->GetShaderResourceView());
+		if (!result)
+		{
+			return false;
+		}
+
+		// Turn the Z buffer back on now that all 2D rendering has completed.
+		m_Direct3D->TurnZBufferOn();
+	}
+
+	// Stop the blur
+	
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
@@ -1814,8 +2099,8 @@ bool ApplicationClass::RenderToTexture()
 	float rotation;
 	bool result;
 
-	m_RenderTexture->SetRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView());
-	m_RenderTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView(), 0.0f, 0.0f, 0.0f, 1.0f);
+	m_RenderTexture->SetRenderTarget(m_Direct3D->GetDeviceContext());
+	m_RenderTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
@@ -1915,6 +2200,472 @@ bool ApplicationClass::RenderToTexture()
 
 	// Reset the render target back to the original back buffer and not the render to texture anymore.
 	m_Direct3D->SetBackBufferRenderTarget();
+
+	return true;
+}
+
+bool ApplicationClass::RenderSceneToTexture()
+{
+	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix, translateMatrix, scaleMatrix;
+	D3DXVECTOR3 cameraPos, modelPos;
+	double angle;
+	float rotation;
+	bool result;
+	float fogColour, fogStart, fogEnd;
+
+	// Set fog colour to gray
+	fogColour = 0.2f;
+	// Set the start and end of the fog
+	fogStart = -2.0f;
+	fogEnd = 7.0f;
+
+	D3DXVECTOR3 cPos, cRot;
+
+	cPos = m_Camera->GetPosition();
+	cRot = m_Camera->GetRotation();
+
+	// Adjust camera for minimap
+	m_Camera->SetPosition(player->getPosition().x, 10.0f, player->getPosition().z);
+	m_Camera->SetRotation(90.0f, 0.0f, 0.0f);
+
+
+	// Re adjust camera
+	if (overheadCam) {
+		// OVERHEAD CAM
+		m_Camera->SetPosition(player->getPosition().x, 20.0f, player->getPosition().z);
+		m_Camera->SetRotation(90.0f, player->getRotation().y, 0.0f);
+	}
+	else {
+		// FIRST PERSON CAM
+		m_Camera->SetPosition(player->getPosition().x, 0.0f, player->getPosition().z);
+		m_Camera->SetRotation(0.0f, player->getRotation().y, 0.0f);
+	}
+
+	/*
+	m_Camera->SetPosition(cPos.x, cPos.y, cPos.z);
+	m_Camera->SetRotation(cRot.x, cRot.y, cRot.z);
+	*/
+
+	// Generate the view matrix based on the camera's position.
+
+	// Clear the scene.
+	m_RenderTexture2->SetRenderTarget(m_Direct3D->GetDeviceContext());
+	m_RenderTexture2->ClearRenderTarget(m_Direct3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	m_Camera->Render();
+
+	// Get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_Direct3D->GetProjectionMatrix(projectionMatrix);
+	m_Direct3D->GetOrthoMatrix(orthoMatrix);
+
+
+	D3DXMatrixTranslation(&worldMatrix, player->getPosition().x, 0.0f, player->getPosition().z);
+
+	m_Direct3D->TurnZBufferOff();
+
+	// Enable additive blending so the clouds blend with the sky dome color
+	m_Direct3D->EnableSecondBlendState();
+	// Render sky plane
+	skyPlane->Render(m_Direct3D->GetDeviceContext());
+	skyShader->Render(m_Direct3D->GetDeviceContext(), skyPlane->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		skyPlane->GetCloudTexture(), skyPlane->GetPerturbTexture(), skyPlane->GetTranslation(), skyPlane->GetScale(),
+		skyPlane->GetBrightness());
+
+
+	m_Direct3D->TurnZBufferOn();
+
+
+	m_Direct3D->TurnOffAlphaBlending();
+
+	for (int i = 0; i < LEVEL_WIDTH; i++) {
+		for (int j = 0; j < LEVEL_HEIGHT; j++) {
+			// Translate to the walls position
+			D3DXMatrixTranslation(&worldMatrix, (float)i, 0.0f, (float)j);
+
+			levelLayout[i][j].getMesh()->Render(m_Direct3D->GetDeviceContext());
+
+			if (overheadCam) {
+				textureShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+					levelLayout[i][j].getMesh()->getTexture1());
+			}
+			else {
+
+				// int plX = player->
+
+				if (levelLayout[(int)player->getPosition().x][(int)player->getPosition().z].type == LevelCell::CellType::dFloor) {
+					fogShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+						levelLayout[i][j].getMesh()->getTexture1(), fogStart, fogEnd);
+				}
+				else {
+					textureShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+						levelLayout[i][j].getMesh()->getTexture1());
+				}
+
+
+
+			}
+			/*
+			pLightShader->Render(m_Direct3D->GetDeviceContext(), levelLayout[i][j].getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+			levelLayout[i][j].getMesh()->getTexture1(), &m_Light->GetDiffuseColor(), &m_Light->GetPosition());
+			*/
+		}
+	}
+
+	rotation = (float)player->getRotation().y * 0.0174532925f;
+
+	D3DXMatrixRotationY(&worldMatrix, rotation);
+	D3DXMatrixTranslation(&translateMatrix, player->getPosition().x, 0.0f, player->getPosition().z);
+	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
+
+	m_Direct3D->TurnOnAlphaBlending();
+
+	player->getMesh()->Render(m_Direct3D->GetDeviceContext());
+	result = textureShader->Render(m_Direct3D->GetDeviceContext(), player->getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		player->getMesh()->getTexture1());
+
+	if (!result) {
+		return false;
+	}
+
+	// Turn on the alpha blending before rendering the text.
+	m_Direct3D->TurnOnAlphaBlending();
+
+	// Render all objects in the level
+
+	D3DXMatrixRotationX(&worldMatrix, 0.0f);
+
+	cameraPos = m_Camera->GetPosition();
+
+	if (levelObjects.size() > 0)
+	{
+		for (int i = 0; i < levelObjects.size(); i++) {
+			modelPos.x = levelObjects.at(i)->getPosition().x;
+			modelPos.y = 0.0f;
+			modelPos.z = levelObjects.at(i)->getPosition().z;
+
+			angle = atan2(modelPos.x - cameraPos.x, modelPos.z - cameraPos.z) * (180.0 / D3DX_PI);
+
+			rotation = (float)angle * 0.0174532925f;
+
+			// Setup the rotation the billboard at the origin using the world matrix.
+			D3DXMatrixRotationY(&worldMatrix, rotation);
+
+			// Setup the translation matrix from the billboard model.
+			D3DXMatrixTranslation(&translateMatrix, modelPos.x, modelPos.y, modelPos.z);
+
+			// Finally combine the rotation and translation matrices to create the final world matrix for the billboard model.
+			D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
+
+			levelObjects.at(i)->getMesh()->Render(m_Direct3D->GetDeviceContext());
+			if (levelLayout[(int)player->getPosition().x][(int)player->getPosition().z].type == LevelCell::CellType::dFloor) {
+				fogShader->Render(m_Direct3D->GetDeviceContext(), levelObjects.at(i)->getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, levelObjects.at(i)->getMesh()->getTexture1(), fogStart, fogEnd);
+
+			}
+			else {
+				textureShader->Render(m_Direct3D->GetDeviceContext(), levelObjects.at(i)->getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, levelObjects.at(i)->getMesh()->getTexture1());
+
+			}
+
+		}
+	}
+
+	modelPos.x = crystal.getPosition().x;
+	modelPos.y = 0.0f;
+	modelPos.z = crystal.getPosition().z;
+
+	angle = atan2(modelPos.x - cameraPos.x, modelPos.z - cameraPos.z) * (180.0 / D3DX_PI);
+
+	rotation = (float)angle * 0.0174532925f;
+
+	// Setup the rotation the billboard at the origin using the world matrix.
+	D3DXMatrixRotationY(&worldMatrix, rotation);
+
+	// Setup the translation matrix from the billboard model.
+	D3DXMatrixTranslation(&translateMatrix, modelPos.x, modelPos.y, modelPos.z);
+
+	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
+
+	crystal.getMesh()->Render(m_Direct3D->GetDeviceContext());
+
+	if (levelLayout[(int)player->getPosition().x][(int)player->getPosition().z].type == LevelCell::CellType::dFloor) {
+		fogShader->Render(m_Direct3D->GetDeviceContext(), crystal.getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, crystal.getMesh()->getTexture1(), fogStart, fogEnd);
+
+	}
+	else {
+		textureShader->Render(m_Direct3D->GetDeviceContext(), crystal.getMesh()->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, crystal.getMesh()->getTexture1());
+
+	}
+
+
+
+	D3DXMatrixRotationX(&worldMatrix, 0.0f);
+
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_Direct3D->TurnZBufferOff();
+
+	// Turn on the alpha blending before rendering the text.
+	m_Direct3D->TurnOnAlphaBlending();
+
+	// Turn off alpha blending after rendering the text.
+	m_Direct3D->TurnOffAlphaBlending();
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_Direct3D->TurnZBufferOn();
+
+	m_Direct3D->TurnZBufferOff();
+
+	// Get the world, view, and ortho matrices from the camera and d3d objects.
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_Direct3D->GetOrthoMatrix(orthoMatrix);
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_Direct3D->TurnZBufferOn();
+
+
+	m_Direct3D->SetBackBufferRenderTarget();
+
+	return true;
+}
+
+bool ApplicationClass::DownSampleTexture()
+{
+	D3DXMATRIX worldMatrix, viewMatrix, orthoMatrix;
+	bool result;
+
+
+	// Set the render target to be the render to texture.
+	m_DownSampleTexure->SetRenderTarget(m_Direct3D->GetDeviceContext());
+
+	// Clear the render to texture.
+	m_DownSampleTexure->ClearRenderTarget(m_Direct3D->GetDeviceContext(), 0.0f, 1.0f, 0.0f, 1.0f);
+
+	// Generate the view matrix based on the camera's position.
+	m_Camera->Render();
+
+	// Get the world and view matrices from the camera and d3d objects.
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+
+	// Get the ortho matrix from the render to texture since texture has different dimensions being that it is smaller.
+	m_DownSampleTexure->GetOrthoMatrix(orthoMatrix);
+
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_Direct3D->TurnZBufferOff();
+
+	// Put the small ortho window vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_SmallWindow->Render(m_Direct3D->GetDeviceContext());
+
+	// Render the small ortho window using the texture shader and the render to texture of the scene as the texture resource.
+	result = textureShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
+		m_RenderTexture2->GetShaderResourceView());
+	if (!result)
+	{
+		return false;
+	}
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_Direct3D->TurnZBufferOn();
+
+	// Reset the render target back to the original back buffer and not the render to texture anymore.
+	m_Direct3D->SetBackBufferRenderTarget();
+
+	// Reset the viewport back to the original.
+	m_Direct3D->ResetViewport();
+
+	return true;
+}
+
+bool ApplicationClass::RenderHorizontalBlurToTexture()
+{
+	D3DXMATRIX worldMatrix, viewMatrix, orthoMatrix;
+	float screenSizeX;
+	bool result;
+
+
+	// Store the screen width in a float that will be used in the horizontal blur shader.
+	screenSizeX = (float)m_HorizontalBlurTexture->GetTextureWidth();
+
+	// Set the render target to be the render to texture.
+	m_HorizontalBlurTexture->SetRenderTarget(m_Direct3D->GetDeviceContext());
+
+	// Clear the render to texture.
+	m_HorizontalBlurTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	// Generate the view matrix based on the camera's position.
+	m_Camera->Render();
+
+	// Get the world and view matrices from the camera and d3d objects.
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+
+	// Get the ortho matrix from the render to texture since texture has different dimensions.
+	m_HorizontalBlurTexture->GetOrthoMatrix(orthoMatrix);
+
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_Direct3D->TurnZBufferOff();
+
+	// Put the small ortho window vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_SmallWindow->Render(m_Direct3D->GetDeviceContext());
+
+	// Render the small ortho window using the horizontal blur shader and the down sampled render to texture resource.
+	result = m_HorizontalBlurShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
+		m_DownSampleTexure->GetShaderResourceView(), screenSizeX);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_Direct3D->TurnZBufferOn();
+
+	// Reset the render target back to the original back buffer and not the render to texture anymore.
+	m_Direct3D->SetBackBufferRenderTarget();
+
+	// Reset the viewport back to the original.
+	m_Direct3D->ResetViewport();
+
+	return true;
+}
+
+bool ApplicationClass::RenderVerticalBlurToTexture()
+{
+	D3DXMATRIX worldMatrix, viewMatrix, orthoMatrix;
+	float screenSizeY;
+	bool result;
+
+
+	// Store the screen height in a float that will be used in the vertical blur shader.
+	screenSizeY = (float)m_VerticalBlurTexture->GetTextureHeight();
+
+	// Set the render target to be the render to texture.
+	m_VerticalBlurTexture->SetRenderTarget(m_Direct3D->GetDeviceContext());
+
+	// Clear the render to texture.
+	m_VerticalBlurTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	// Generate the view matrix based on the camera's position.
+	m_Camera->Render();
+
+	// Get the world and view matrices from the camera and d3d objects.
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+
+	// Get the ortho matrix from the render to texture since texture has different dimensions.
+	m_VerticalBlurTexture->GetOrthoMatrix(orthoMatrix);
+
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_Direct3D->TurnZBufferOff();
+
+	// Put the small ortho window vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_SmallWindow->Render(m_Direct3D->GetDeviceContext());
+
+	// Render the small ortho window using the vertical blur shader and the horizontal blurred render to texture resource.
+	result = m_VerticalBlurShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
+		m_HorizontalBlurTexture->GetShaderResourceView(), screenSizeY);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_Direct3D->TurnZBufferOn();
+
+	// Reset the render target back to the original back buffer and not the render to texture anymore.
+	m_Direct3D->SetBackBufferRenderTarget();
+
+	// Reset the viewport back to the original.
+	m_Direct3D->ResetViewport();
+
+	return true;
+}
+
+bool ApplicationClass::UpSampleTexture()
+{
+	D3DXMATRIX worldMatrix, viewMatrix, orthoMatrix;
+	bool result;
+
+
+	// Set the render target to be the render to texture.
+	m_UpSampleTexure->SetRenderTarget(m_Direct3D->GetDeviceContext());
+
+	// Clear the render to texture.
+	m_UpSampleTexure->ClearRenderTarget(m_Direct3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	// Generate the view matrix based on the camera's position.
+	m_Camera->Render();
+
+	// Get the world and view matrices from the camera and d3d objects.
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+
+	// Get the ortho matrix from the render to texture since texture has different dimensions.
+	m_UpSampleTexure->GetOrthoMatrix(orthoMatrix);
+
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_Direct3D->TurnZBufferOff();
+
+	// Put the full screen ortho window vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_FullScreenWindow->Render(m_Direct3D->GetDeviceContext());
+
+	// Render the full screen ortho window using the texture shader and the small sized final blurred render to texture resource.
+	result = textureShader->Render(m_Direct3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
+		m_VerticalBlurTexture->GetShaderResourceView());
+	if (!result)
+	{
+		return false;
+	}
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_Direct3D->TurnZBufferOn();
+
+	// Reset the render target back to the original back buffer and not the render to texture anymore.
+	m_Direct3D->SetBackBufferRenderTarget();
+
+	// Reset the viewport back to the original.
+	m_Direct3D->ResetViewport();
+
+	return true;
+}
+
+bool ApplicationClass::Render2DTextureScene()
+{
+	D3DXMATRIX worldMatrix, viewMatrix, orthoMatrix;
+	bool result;
+
+
+	// Clear the buffers to begin the scene.
+	// m_Direct3D->BeginScene(1.0f, 0.0f, 0.0f, 0.0f);
+
+	// Generate the view matrix based on the camera's position.
+	// m_Camera->Render();
+
+	// Get the world, view, and ortho matrices from the camera and d3d objects.
+	// m_Camera->GetViewMatrix(viewMatrix);
+	// m_Direct3D->GetWorldMatrix(worldMatrix);
+	//m_Direct3D->GetOrthoMatrix(orthoMatrix);
+
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_Direct3D->TurnZBufferOff();
+
+	// Put the full screen ortho window vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_FullScreenWindow->Render(m_Direct3D->GetDeviceContext());
+
+	// Render the full screen ortho window using the texture shader and the full screen sized blurred render to texture resource.
+	result = textureShader->Render(m_Direct3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
+		m_UpSampleTexure->GetShaderResourceView());
+	if (!result)
+	{
+		return false;
+	}
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_Direct3D->TurnZBufferOn();
+
+	// Present the rendered scene to the screen.
+	// m_D3D->EndScene();
 
 	return true;
 }
